@@ -17,6 +17,7 @@ import CargoEditPage from "../pages/cargo-edit";
 import GodownListPage from "../pages/godown-list";
 import GodownCreatePage from "../pages/godown-create";
 import GodownEditPage from "../pages/godown-edit";
+import UnloadVehicleList from "../pages/unload-vehicle-list";
 
 export const router = createBrowserRouter([
     {
@@ -62,6 +63,10 @@ export const router = createBrowserRouter([
             {
                 path: "/godown/edit",
                 element: <GodownEditPage />
+            },
+            {
+                path: "unload_vehicle/list",
+                element: <UnloadVehicleList />
             }
         ]
     },

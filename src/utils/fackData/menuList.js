@@ -1,44 +1,43 @@
 export const menuList = [
     {
-        id: 1,
-        name: "Party Management",
+        id: 0,
+        name:"Master",
         path: "#",
-        icon: 'feather-user',
+        icon: 'feather-airplay',
         dropdownMenu: [
             {
                 id: 1,
-                name: "Parties",
+                name:"Party Management",
                 path: "/parties/list",
                 subdropdownMenu: false
             },
-        ]
-    },
-    {
-        id: 2,
-        name: "Cargo Management",
-        path: "#",
-        icon: 'feather-truck',
-        dropdownMenu: [
             {
-                id: 1,
-                name: "Cargo",
+                id: 2,
+                name:"Cargo Management",
                 path: "/cargo/list",
                 subdropdownMenu: false
             },
+            {
+                id: 3,
+                name:"Godown Management",
+                path: "/godown/list",
+                subdropdownMenu: false
+            }
         ]
     },
     {
-        id: 3,
-        name: "Godown Management",
+        id: 1,
+        name:"Unload Vehicle",    
         path: "#",
-        icon: 'feather-inbox',
+        icon: "feather-airplay",
         dropdownMenu: [
             {
                 id: 1,
-                name: "Godown",
-                path: "/godown/list",
+                name: "Unload Vehicle",
+                path: "/unload_vehicle/list",
                 subdropdownMenu: false
             },
+            
         ]
     },
     {
