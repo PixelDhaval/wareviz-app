@@ -1,10 +1,9 @@
 import PageHeader from "@/components/shared/pageHeader/PageHeader";
 import PageHeaderDate from "@/components/shared/pageHeader/PageHeaderDate";
-import UnloadVehicleHeader from "@/components/unloadThroughVehicle/UnloadVehicleHeader";
-import UnloadVehicleTable from "@/components/unloadThroughVehicle/UnloadVehicleTable";
+import UnloadThroughVehicleBasicTabHeader from "@/components/unloadThroughVehicleBasicTabs/unloadThroughVehicleBasicTabHeader";
 import React from "react";
 
-const UnloadVehicleList = () => {
+const UnloadThroughVehicleTabs = () => {
     return (
         <>
             <PageHeader>
@@ -12,13 +11,11 @@ const UnloadVehicleList = () => {
             </PageHeader>
             <div className="main-content">
                 <div className="card">
-                    <UnloadVehicleHeader />
-
+                    <UnloadThroughVehicleBasicTabHeader />
                 </div>
-                <UnloadVehicleTable />
             </div>
         </>
     )
 };
 
-export default UnloadVehicleList;
+export default UnloadThroughVehicleTabs;

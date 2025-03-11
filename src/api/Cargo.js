@@ -11,6 +11,10 @@ export const getAllcargos = async (sortBy, order, page, pageSize, filters) => {
     return await AxiosInstance.get("/cargos", { params: data }).then(response => response.data).catch(error => error.response);
 };
 
+export const cargo = async (inputValue) => {
+    return await AxiosInstance.get("/get-all-cargos",{params: {search: inputValue}}).then(response => response.data).catch(error => error.response);
+}
+
 export const getCargo = async (id) => {
     return await AxiosInstance.get(`/cargos/${id}`).then(response => response.data).catch(error => error.response);
 };

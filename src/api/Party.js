@@ -12,6 +12,10 @@ export const getAllParties = async (sortBy, order, page, pageSize, filters) => {
     return await AxiosInstance.get("/parties", {params: data}).then((res) => res.data).catch((err) => console.log(err));
 }
 
+export const party = async (inputValue) => {
+    return await AxiosInstance.get("/get-all-parties",{params: {search: inputValue}}).then(response => response.data).catch(error => error.response);
+}
+
 export const getParty = async (id) => {
     return await AxiosInstance.get(`/parties/${id}`).then((res) => res.data).catch((err) => console.log(err));
 }

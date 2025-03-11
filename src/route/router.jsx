@@ -18,6 +18,8 @@ import GodownListPage from "../pages/godown-list";
 import GodownCreatePage from "../pages/godown-create";
 import GodownEditPage from "../pages/godown-edit";
 import UnloadVehicleList from "../pages/unload-vehicle-list";
+import UnloadThroughVehicleCreate from "../pages/unload-through-vehicle-create";
+import UnloadThroughVehicleTabs from "../pages/unloadThroughVehicleTabs";
 
 export const router = createBrowserRouter([
     {
@@ -67,7 +69,15 @@ export const router = createBrowserRouter([
             {
                 path: "unload_vehicle/list",
                 element: <UnloadVehicleList />
-            }
+            },
+            {
+                path: "unload_vehicle/create",
+                element: <UnloadThroughVehicleCreate />
+            },
+            {
+                path: "unload_vehicle/view",
+                element: <UnloadThroughVehicleTabs />
+            },
         ]
     },
     {

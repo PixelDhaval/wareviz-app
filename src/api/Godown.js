@@ -11,6 +11,10 @@ export const getAllGodowns = (sortBy, order, page, pageSize, filters) => {
     return AxiosInstance.get("/godowns", { params: data });
 };
 
+export const godown = async (inputValue) => {
+    return await AxiosInstance.get("/get-all-godowns",{params: {search: inputValue}}).then(response => response.data).catch(error => error.response);
+}
+
 export const getGodown = async (id) => {
     return await AxiosInstance.get(`/godowns/${id}`).then(response => response.data).catch(error => error.response);
 };

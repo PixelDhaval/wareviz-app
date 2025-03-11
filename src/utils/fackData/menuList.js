@@ -29,7 +29,7 @@ export const menuList = [
         id: 1,
         name:"Unload Vehicle",    
         path: "#",
-        icon: "feather-airplay",
+        icon: "feather-truck",
         dropdownMenu: [
             {
                 id: 1,
@@ -37,7 +37,7 @@ export const menuList = [
                 path: "/unload_vehicle/list",
                 subdropdownMenu: false
             },
-            
+           
         ]
     },
     {
