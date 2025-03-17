@@ -20,6 +20,9 @@ import GodownEditPage from "../pages/godown-edit";
 import UnloadVehicleList from "../pages/unload-vehicle-list";
 import UnloadThroughVehicleCreate from "../pages/unload-through-vehicle-create";
 import UnloadThroughVehicleTabs from "../pages/unloadThroughVehicleTabs";
+import PartyShiftingList from "../pages/party-shifting-list";
+import PartyShiftingCreate from "../pages/party-shifting-create";
+import PartyShiftingView from "../pages/party-shifting-view";
 
 export const router = createBrowserRouter([
     {
@@ -78,6 +81,18 @@ export const router = createBrowserRouter([
                 path: "unload_vehicle/view",
                 element: <UnloadThroughVehicleTabs />
             },
+            {
+                path: "/party_shifting/list",
+                element: <PartyShiftingList />
+            },
+            {
+                path: "/shirting_list/create",  
+                element: <PartyShiftingCreate />
+            },
+            {
+                path: "/shirting_list/view",
+                element: <PartyShiftingView />
+            }
         ]
     },
     {

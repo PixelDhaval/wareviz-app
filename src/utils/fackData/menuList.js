@@ -41,6 +41,20 @@ export const menuList = [
         ]
     },
     {
+        id: 2,
+        name: "Party Shifting",
+        path: "#",
+        icon: "feather-clock",
+        dropdownMenu: [
+            {
+                id: 1,
+                name: "Party Shifting",
+                path: "/party_shifting/list",
+                subdropdownMenu: false
+            },
+        ]
+    },
+    {
         id: 10,
         name: "authentication",
         path: "#",
