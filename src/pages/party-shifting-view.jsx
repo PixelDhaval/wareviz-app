@@ -11,7 +11,6 @@ const PartyShiftingView = ({ }) => {
     return (
         <>
             <PageHeader>
-                <PageHeaderDate />
             </PageHeader>
             <div className="main-content">
                 <ShiftingViewTabs />

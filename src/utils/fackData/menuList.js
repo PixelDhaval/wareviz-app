@@ -34,7 +34,7 @@ export const menuList = [
             {
                 id: 1,
                 name: "Unload Vehicle",
-                path: "/unload_vehicle/list",
+                path: "/unload_vehicle/create",
                 subdropdownMenu: false
             },
            
@@ -49,7 +49,7 @@ export const menuList = [
             {
                 id: 1,
                 name: "Party Shifting",
-                path: "/party_shifting/list",
+                path: "/party_shifting/create",
                 subdropdownMenu: false
             },
         ]

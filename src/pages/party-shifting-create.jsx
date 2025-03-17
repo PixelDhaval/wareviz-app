@@ -7,7 +7,6 @@ const PartyShiftingCreate = () => {
     return (
         <>
             <PageHeader>
-                <PageHeaderDate />
             </PageHeader>
             <div className="main-content">
                 <ShiftingCreate /> 

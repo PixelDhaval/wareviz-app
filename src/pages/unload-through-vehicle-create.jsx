@@ -9,7 +9,6 @@ const UnloadThroughVehicleCreate = () => {
     return (
         <>
             <PageHeader>
-                <PageHeaderDate />
             </PageHeader>
             <div className="main-content">
                     <UnloadVehicleBesicDetails />

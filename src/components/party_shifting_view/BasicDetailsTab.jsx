@@ -23,15 +23,16 @@ const BasicDetailsTab = ({ shiftingDetails }) => {
         cargo_name: basicDetails.cargo?.cargo_name,
         movement_type: basicDetails.movement_type,
         godown_id: basicDetails.godown?.id,
+        godown_name: basicDetails.godown?.godown_name,
         type: "unload",
         movement_at: basicDetails.movement_at
     });
     const [updateref, setUpdateref] = useState({
-        id: formData.ref_movement_id,
-        party_id: formData.party_id,
-        godown_id: formData.godown_id,
-        supplier_id: formData.supplier_id,
-        cargo_id: formData.cargo_id,
+        id: '',
+        party_id: '',
+        godown_id: '',
+        supplier_id: '',
+        cargo_id: '',
         type: "unload"
     });
 
@@ -57,6 +58,7 @@ const BasicDetailsTab = ({ shiftingDetails }) => {
             cargo_name: shiftingDetails?.cargo?.cargo_name,
             movement_type: shiftingDetails.movement_type,
             godown_id: shiftingDetails.godown?.id,
+            godown_name: shiftingDetails.godown?.godown_name,
             type: "load",
             movement_at: shiftingDetails.movement_at
         })
@@ -156,13 +158,10 @@ const BasicDetailsTab = ({ shiftingDetails }) => {
     // handle to shifting change 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log(formData);
         const response = await createUnloadVehicle(formData);
-        console.log(response);
         if (response.status === 200) {
             const ref_movement_id = response.data?.id;
             const updateDetails = await updateVehicle(shiftingDetails.id, { ref_movement_id });
-            console.log(updateDetails);
             setBasicDetails(updateDetails.data);
             Swal.fire({
                 title: "Vehicle created successfully",
@@ -195,6 +194,7 @@ const BasicDetailsTab = ({ shiftingDetails }) => {
         setUpdateref({
             ...updateref,
             id: shiftingDetails.ref_movement_id,
+            godown_id: shiftingDetails.godown?.id,
             party_id: shiftingDetails.party?.id,
             supplier_id: shiftingDetails.supplier?.id,
             cargo_id: shiftingDetails.cargo?.id,
@@ -204,37 +204,45 @@ const BasicDetailsTab = ({ shiftingDetails }) => {
     }
 
     // handle modal form submit
-    
+
     const handleFormSubmit = async (e) => {
         e.preventDefault();
         const response = await updateVehicle(basicDetails.id, formData);
-        console.log(formData, response);
+        setBasicDetails(response?.data);
         if (response.status === 200) {
-            setBasicDetails(response.data);
-            // if (basicDetails.movement_type == "party_shifting") {
-            //     console.log("data");
-            //     setUpdateref({
-            //         ...updateref,
-            //         id: formData.ref_movement_id,
-            //         godown_id: formData.godown_id,
-            //         supplier_id: formData.supplier_id,
-            //         cargo_id: formData.cargo_id,
-            //         type: "unload"
-            //     })
-            // }
-            // else {
-            //     console.log(formData)
-            //     setUpdateref({
-            //         ...updateref,
-            //         id: formData.ref_movement_id,
-            //         party_id: formData.party_id,
-            //         supplier_id: formData.supplier_id,
-            //         cargo_id: formData.cargo_id,
-            //         type: "unload"
-            //     })
-            // }
-            const res = await updateVehicle(updateref.id, updateref);
-            console.log(updateref, res)
+            if (basicDetails.movement_type == "party_shifting") {
+                setUpdateref({
+                    ...updateref,
+                    id: response.data?.ref_movement_id,
+                    godown_id: response.data?.godown_id,
+                    supplier_id: response.data?.supplier_id,
+                    cargo_id: response.data?.cargo_id,
+                    type: "unload"
+                })
+                const res = await updateVehicle(response.data?.ref_movement_id, {
+                    supplier_id: response.data?.supplier_id,
+                    godown_id: response.data?.godown_id,
+                    cargo_id: response.data?.cargo_id,
+                    type: "unload"
+                });
+            }
+            else {
+                setUpdateref({
+                    ...updateref,
+                    id: response.data?.ref_movement_id,
+                    party_id: response.data?.party_id,
+                    supplier_id: response.data?.supplier_id,
+                    cargo_id: response.data?.cargo_id,
+                    type: "unload"
+                })
+                const res = await updateVehicle(response.data?.ref_movement_id, {
+                    supplier_id: response.data?.supplier_id,
+                    party_id: response.data?.party_id,
+                    cargo_id: response.data?.cargo_id,
+                    type: "unload"
+                });
+            }
+
             Swal.fire({
                 title: "Vehicle updated successfully",
                 icon: "success",
@@ -263,9 +271,7 @@ const BasicDetailsTab = ({ shiftingDetails }) => {
     // handle to ref movement change
     const handleRefSubmit = async (e) => {
         e.preventDefault();
-        console.log(refMovementValue.id);
         const response = await updateVehicle(refMovementValue.id, refMovementValue);
-        console.log(response);
         if (response.status === 200) {
             setRefMovementValue({ ...refMovementValue, [refMovementValue.id]: response.data })
             setRefFlag(false);
@@ -295,9 +301,16 @@ const BasicDetailsTab = ({ shiftingDetails }) => {
                                     <h6 className="mb-0">{basicDetails.party?.legal_name + " - "}<span className="text-secondary">{basicDetails.supplier?.trade_name}</span></h6>
                                     <p className="mb-0 text-muted">{basicDetails.cargo?.cargo_name}</p>
                                 </div>
+                                <div>
+                                    <span>
+                                        <h6 className="mb-0">Godown </h6>
+                                        <p className="badge bg-soft-warning text-warning mb-0">{basicDetails.godown?.godown_name}</p>
+                                    </span>
+                                </div>
                                 <button className="btn btn-primary btn-sm p-2 my-2 gap-1" type="button" onClick={handleEdit}>
                                     <FiEdit size={14} />Edit
                                 </button>
+
                                 <hr className="m-1" />
                                 {
                                     basicDetails.ref_movement_id === null ?
@@ -370,6 +383,7 @@ const BasicDetailsTab = ({ shiftingDetails }) => {
                                                                         value={{ value: refMovementValue.party_id, label: refMovementValue.party_name }}
                                                                     />
                                                                     <Button size="sm" className="my-2" variant="primary" type="submit">update</Button>
+                                                                    <Button size="sm" className="my-2" variant="danger" type="button" onClick={(e) => setRefFlag(false)} >Cancel</Button>
                                                                 </Form>
                                                             ) : (
                                                                 <Form onSubmit={handleRefSubmit} className="my-3">
@@ -389,6 +403,7 @@ const BasicDetailsTab = ({ shiftingDetails }) => {
                                                                         value={{ value: refMovementValue.godown_id, label: refMovementValue.godown_name }}
                                                                     />
                                                                     <Button size="sm" className="my-2" variant="primary" type="submit">Update</Button>
+                                                                    <Button size="sm" className="my-2" variant="danger" type="button" onClick={(e) => setRefFlag(false)} >Cancel</Button>
                                                                 </Form>
                                                             )
                                                         ) : (
@@ -492,6 +507,21 @@ const BasicDetailsTab = ({ shiftingDetails }) => {
                                     }
                                     )}
                                 value={{ value: formData.cargo_id, label: formData.cargo_name }}
+                            />
+                        </div>
+                        <div className="">
+                            <label>Godown</label>
+                            <AsyncSelect
+                                cacheOptions
+                                defaultOptions
+                                loadOptions={godownOption}
+                                name="godown_id"
+                                onChange={(opt) => setFormData({
+                                    ...formData,
+                                    godown_id: opt.value,
+                                    godown_name: opt.label,
+                                })}
+                                value={{ value: formData.godown_id, label: formData.godown_name }}
                             />
                         </div>
                         <div>

@@ -14,7 +14,9 @@ const BasicDetails = ({ viewVehicleList }) => {
     const [errorHandler, setErrorHandler] = useState({
         vehicle_no: "",
         driver_name: "",
-        driver_no: ""
+        driver_no: "",
+        rr_number: "",
+        rr_date: ""
     });
     const [formData, setFormData] = useState({
         vehicle_no: "",
@@ -23,7 +25,9 @@ const BasicDetails = ({ viewVehicleList }) => {
         driver_lic_no: "",
         net_weight: "",
         gross_weight: "",
-        tare_weight: ""
+        tare_weight: "",
+        rr_date: "",
+        rr_number: ""
     });
 
     // Fetch data from API
@@ -51,7 +55,9 @@ const BasicDetails = ({ viewVehicleList }) => {
             driver_lic_no: basicDetails.driver_lic_no,
             net_weight: basicDetails.net_weight,
             gross_weight: basicDetails.gross_weight,
-            tare_weight: basicDetails.tare_weight
+            tare_weight: basicDetails.tare_weight,
+            rr_number: basicDetails.rr_number,
+            rr_date: basicDetails.rr_date
         })
         setShowModel(true);
     }
@@ -59,20 +65,17 @@ const BasicDetails = ({ viewVehicleList }) => {
     // handle form submit
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (formData.vehicle_no != '' && formData.driver_name != '' && formData.driver_no != '' && formData.driver_lic_no != '' && formData.net_weight != '' && formData.gross_weight != '' && formData.tare_weight != '') {
-
-            const response = await updateVehicle(basicDetails.id, formData);
-            console.log(response);
-            if (response.status === 200) {
-                Swal.fire({
-                    title: "Vehicle updated successfully",
-                    icon: "success",
-                    showConfirmButton: false,
-                    timer: 800
-                })
-                setBasicDetails(response.data)
-                setShowModel(false);
-            }
+        const response = await updateVehicle(basicDetails.id, formData);
+        console.log(response);
+        if (response.status === 200) {
+            Swal.fire({
+                title: "Vehicle updated successfully",
+                icon: "success",
+                showConfirmButton: false,
+                timer: 800
+            })
+            setBasicDetails(response.data)
+            setShowModel(false);
         }
     }
     const handleClose = () => setShowModel(false);
@@ -97,7 +100,7 @@ const BasicDetails = ({ viewVehicleList }) => {
                                     {basicDetails?.movement_type === "vehicle" ? (
                                         <div className="row">
                                             <p className="col-12 col-lg-4">
-                                                Vehicle No : {`${basicDetails?.vehicle_no } / ${basicDetails?.driver_name} ( ${basicDetails?.driver_no} )`}
+                                                Vehicle No : {`${basicDetails?.vehicle_no} / ${basicDetails?.driver_name} ( ${basicDetails?.driver_no} )`}
                                             </p>
                                             <p className="col-12 col-lg-4">LIC : {basicDetails?.driver_lic_no}</p>
                                         </div>
@@ -112,7 +115,7 @@ const BasicDetails = ({ viewVehicleList }) => {
                                 <hr className="m-1" />
                                 <div className="">
                                     {basicDetails?.movement_type === "vehicle" ? (
-                                        <p>N : {basicDetails?.net_weight} | G : {basicDetails?.gross_weight} | T : {basicDetails?.tare_weight }</p>
+                                        <p>N : {basicDetails?.net_weight} | G : {basicDetails?.gross_weight} | T : {basicDetails?.tare_weight}</p>
                                     ) : (
                                         <p>G : {basicDetails?.gross_weight}</p>
                                     )}
@@ -192,48 +195,72 @@ const BasicDetails = ({ viewVehicleList }) => {
                 <Form onSubmit={handleSubmit}>
                     <Modal.Body>
                         <div className="">
-                            <div className="">
-                                <Form.Label>Vehicle No</Form.Label>
-                                <Form.Control onChange={handleChange} value={formData.vehicle_no} type="text" name="vehicle_no" placeholder="Enter vehicle no" />
-                                <span className="text-danger">{errorHandler.vehicle_no ? errorHandler.vehicle_no : ""}</span>
-                            </div>
-                            <div className="">
-                                <Form.Label>Driver Name</Form.Label>
-                                <Form.Control onChange={handleChange} value={formData.driver_name} type="text" name="driver_name" placeholder="Enter driver name" />
-                                <span className="text-danger">{errorHandler.driver_name ? errorHandler.driver_name : ""}</span>
-                            </div>
-                            <div className="">
-                                <Form.Label>Driver No</Form.Label>
-                                <Form.Control onChange={handleChange} value={formData.driver_no} type="text" name="driver_no" placeholder="Enter driver no" />
-                                <span className="text-danger">{errorHandler.driver_no ? errorHandler.driver_no : ""}</span>
-                            </div>
-                            <div className="">
-                                <Form.Label>License No</Form.Label>
-                                <Form.Control onChange={handleChange} value={formData.driver_lic_no} type="text" name="driver_lic_no" placeholder="Enter license no" />
-                                <span className="text-danger">{errorHandler.driver_lic_no ? errorHandler.driver_lic_no : ""}</span>
-                            </div>
-                            <div className="">
-                                <Form.Label>Net Weight</Form.Label>
-                                <Form.Control onChange={handleChange} value={formData.net_weight} type="text" name="net_weight" placeholder="Enter net weight" />
-                                <span className="text-danger">{errorHandler.net_weight ? errorHandler.net_weight : ""}</span>
-                            </div>
-                            <div className="">
-                                <Form.Label>Gross Weight</Form.Label>
-                                <Form.Control onChange={handleChange} value={formData.gross_weight} type="text" name="gross_weight" placeholder="Enter gross weight" />
-                                <span className="text-danger">{errorHandler.gross_weight ? errorHandler.gross_weight : ""}</span>
-                            </div>
-                            <div className="">
-                                <Form.Label>Tare Weight</Form.Label>
-                                <Form.Control onChange={handleChange} value={formData.tare_weight} type="text" name="tare_weight" placeholder="Enter tare weight" />
-                                <span className="text-danger">{errorHandler.tare_weight ? errorHandler.tare_weight : ""}</span>
-                            </div>
+                            {
+                                basicDetails?.movement_type == "vehicle" ?
+                                    <>
+                                        <div className="">
+                                            <Form.Label>Vehicle No</Form.Label>
+                                            <Form.Control onChange={handleChange} value={formData.vehicle_no} type="text" name="vehicle_no" placeholder="Enter vehicle no" />
+                                            <span className="text-danger">{errorHandler.vehicle_no ? errorHandler.vehicle_no : ""}</span>
+                                        </div>
+                                        <div className="">
+                                            <Form.Label>Driver Name</Form.Label>
+                                            <Form.Control onChange={handleChange} value={formData.driver_name} type="text" name="driver_name" placeholder="Enter driver name" />
+                                            <span className="text-danger">{errorHandler.driver_name ? errorHandler.driver_name : ""}</span>
+                                        </div>
+                                        <div className="">
+                                            <Form.Label>Driver No</Form.Label>
+                                            <Form.Control onChange={handleChange} value={formData.driver_no} type="text" name="driver_no" placeholder="Enter driver no" />
+                                            <span className="text-danger">{errorHandler.driver_no ? errorHandler.driver_no : ""}</span>
+                                        </div>
+                                        <div className="">
+                                            <Form.Label>License No</Form.Label>
+                                            <Form.Control onChange={handleChange} value={formData.driver_lic_no} type="text" name="driver_lic_no" placeholder="Enter license no" />
+                                            <span className="text-danger">{errorHandler.driver_lic_no ? errorHandler.driver_lic_no : ""}</span>
+                                        </div>
+                                        <div className="">
+                                            <Form.Label>Net Weight</Form.Label>
+                                            <Form.Control onChange={handleChange} value={formData.net_weight} type="text" name="net_weight" placeholder="Enter net weight" />
+                                            <span className="text-danger">{errorHandler.net_weight ? errorHandler.net_weight : ""}</span>
+                                        </div>
+                                        <div className="">
+                                            <Form.Label>Gross Weight</Form.Label>
+                                            <Form.Control onChange={handleChange} value={formData.gross_weight} type="text" name="gross_weight" placeholder="Enter gross weight" />
+                                            <span className="text-danger">{errorHandler.gross_weight ? errorHandler.gross_weight : ""}</span>
+                                        </div>
+                                        <div className="">
+                                            <Form.Label>Tare Weight</Form.Label>
+                                            <Form.Control onChange={handleChange} value={formData.tare_weight} type="text" name="tare_weight" placeholder="Enter tare weight" />
+                                            <span className="text-danger">{errorHandler.tare_weight ? errorHandler.tare_weight : ""}</span>
+                                        </div>
+                                    </>
+                                    :
+                                    <>
+                                        <div className="">
+                                            <Form.Label>RR No</Form.Label>
+                                            <Form.Control onChange={handleChange} value={formData.rr_number} type="text" name="rr_number" placeholder="Enter RR no" />
+                                            <span className="text-danger">{errorHandler.rr_number ? errorHandler.rr_number : ""}</span>
+                                        </div>
+                                        <div className="">
+                                            <Form.Label>RR Date</Form.Label>
+                                            <Form.Control onChange={handleChange} value={formData.rr_date} type="datetime-local" name="rr_date" placeholder="Enter RR date" />
+                                            <span className="text-danger">{errorHandler.rr_date ? errorHandler.rr_date : ""}</span>
+                                        </div>
+                                        <div className="">
+                                            <Form.Label>Gross Weight</Form.Label>
+                                            <Form.Control onChange={handleChange} value={formData.gross_weight} type="text" name="gross_weight" placeholder="Enter gross weight" />
+                                            <span className="text-danger">{errorHandler.gross_weight ? errorHandler.gross_weight : ""}</span>
+                                        </div>
+                                    </>
+                            }
+
                         </div>
                     </Modal.Body>
                     <Modal.Footer>
                         <button className="btn btn-primary btn-sm p-2" type="submit">
                             Update
                         </button>
-                        <button className="btn btn-danger btn-sm p-2" onClick={handleClose}>
+                        <button type="button" className="btn btn-danger btn-sm p-2" onClick={handleClose}>
                             Close
                         </button>
                     </Modal.Footer>

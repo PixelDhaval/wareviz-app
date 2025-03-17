@@ -8,7 +8,6 @@ const UnloadVehicleList = () => {
     return (
         <>
             <PageHeader>
-                <PageHeaderDate />
             </PageHeader>
             <div className="main-content">
                 <div className="card">

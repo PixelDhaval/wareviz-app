@@ -1,10 +1,15 @@
 import AxiosInstance from "./AxiosInstance";
 
-export const getAllVehicleMovements = async (filter) => {
+export const getAllVehicleMovements = async (filter, perPage, page, pageSize) => {
     let data = {
+        sortBy: "movement_at",
+        order: "desc",
+        page: page,
+        pageSize: pageSize,
+        perPage: perPage,
         filters: filter
     }
-    return await AxiosInstance.get("/vehicle-movements", {params: data}).then((res) => res.data).catch((err) => err.response);
+    return await AxiosInstance.get("/vehicle-movements", { params: data }).then((res) => res.data).catch((err) => err.response);
 }
 
 export const getVehicleMovements = async (id) => {
