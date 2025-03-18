@@ -23,6 +23,8 @@ import UnloadThroughVehicleTabs from "../pages/unloadThroughVehicleTabs";
 import PartyShiftingList from "../pages/party-shifting-list";
 import PartyShiftingCreate from "../pages/party-shifting-create";
 import PartyShiftingView from "../pages/party-shifting-view";
+import LoadVehicleCreate from "../pages/load-vehicle-create";
+import LoadVehicleView from "../pages/load-vehicle-view";
 
 export const router = createBrowserRouter([
     {
@@ -76,6 +78,14 @@ export const router = createBrowserRouter([
             {
                 path: "/unload/view",
                 element: <UnloadThroughVehicleTabs />
+            },
+            {
+                path: "/load/create",
+                element: <LoadVehicleCreate />
+            },
+            {
+                path: "/load/view",
+                element: <LoadVehicleView/>
             },
             {
                 path: "/shifting/list",

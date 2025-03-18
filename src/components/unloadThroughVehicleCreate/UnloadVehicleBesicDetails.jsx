@@ -21,6 +21,9 @@ const UnloadVehicleBesicDetails = () => {
         supplier_id: "",
         cargo_id: "",
         movement_type: "",
+        gross_weight: "",
+        tare_weight: "",
+        net_weight: ""
     });
     const [filters, setFilters] = React.useState({
         party_id: "",
@@ -46,9 +49,16 @@ const UnloadVehicleBesicDetails = () => {
         movement_at: formattedDate
     });
     const [errorHandler, setErrorHandler] = React.useState({
+        party_id: "",
+        supplier_id: "",
+        cargo_id: "",
+        movement_type: "",
         vehicle_no: "",
         driver_name: "",
-        driver_no: ""
+        driver_no: "",
+        gross_weight: "",
+        tare_weight: "",
+        net_weight: ""
     });
 
     // row per page state
@@ -141,8 +151,13 @@ const UnloadVehicleBesicDetails = () => {
             setCreateVehicle(formData);
             setShowModel(true);
         } else {
+            setErrorHandler({
+                party_id: "this field is required",
+                supplier_id: "this field is required",
+                cargo_id: "this field is required",
+                movement_type: "this field is required",
+            })
             setShowModel(false);
-            alert("Please select all the fields");
         }
     }
     const handleClose = () => setShowModel(false);
@@ -249,6 +264,7 @@ const UnloadVehicleBesicDetails = () => {
                                                 , setFilters({ ...filters, party_id: opt.value })
                                             )}
                                         />
+                                        <span className="text-danger">{errorHandler.party_id ? errorHandler.party_id : ""}</span>
                                     </div>
                                     <div className="col-sm-12 col-lg-6">
                                         <label>Supplier</label>
@@ -261,6 +277,7 @@ const UnloadVehicleBesicDetails = () => {
                                                 , setFilters({ ...filters, supplier_id: opt.value })
                                             )}
                                         />
+                                        <span className="text-danger">{errorHandler.supplier_id ? errorHandler.supplier_id : ""}</span>
                                     </div>
                                 </div>
 
@@ -276,6 +293,7 @@ const UnloadVehicleBesicDetails = () => {
                                                 , setFilters({ ...filters, cargo_id: opt.value })
                                             )}
                                         />
+                                        <span className="text-danger">{errorHandler.cargo_id ? errorHandler.cargo_id : ""}</span>
                                     </div>
                                     <div className="col-sm-12 col-lg-6">
                                         <label>Delivery Type</label>
@@ -289,6 +307,7 @@ const UnloadVehicleBesicDetails = () => {
                                                 , setFilters({ ...filters, movement_type: opt.value })
                                             )}
                                         />
+                                        <span className="text-danger">{errorHandler.movement_type ? errorHandler.movement_type : ""}</span>
                                     </div>
                                 </div>
 
@@ -335,6 +354,7 @@ const UnloadVehicleBesicDetails = () => {
                                                                 {
                                                                     item?.movement_type == "vehicle" ?
                                                                         <p className="mb-1">
+                                                                            <span className="badge bg-soft-info text-info me-2"><FiTruck size={12} className="" /> {item.movement_type}</span>
                                                                             <span className="badge bg-soft-warning text-warning me-2">{item.vehicle_no}</span>
                                                                             {
                                                                                 item?.godown_id == null ?
@@ -343,17 +363,16 @@ const UnloadVehicleBesicDetails = () => {
                                                                                     <span className="badge bg-soft-primary text-primary me-2">{item?.godown?.godown_name + " - " + item?.godown?.godown_no}</span>
 
                                                                             }
-                                                                            <span className="badge bg-soft-info text-info me-2"><FiTruck size={12} className="" /> {item.movement_type}</span>
                                                                         </p>
                                                                         :
                                                                         <p className="mb-1">
+                                                                            <span className="badge bg-soft-primary text-primary me-2"><MdDirectionsRailway size={12} className="" /> {item.movement_type}</span>
                                                                             {
                                                                                 item?.rr_number == null ?
                                                                                     <>  </>
                                                                                     :
                                                                                     <span className="badge bg-soft-warning text-warning me-2">{item.rr_number + " - " + item.rr_date}</span>
                                                                             }
-                                                                            <span className="badge bg-soft-info text-info me-2"><MdDirectionsRailway size={12} className="" /> {item.movement_type}</span>
                                                                         </p>
                                                                 }
                                                             </div>
@@ -464,53 +483,53 @@ const UnloadVehicleBesicDetails = () => {
                                 :
                                 <>
                                     <Placeholder animation="glow" xs={12} className="mb-3">
-                                        <div class="card" aria-hidden="true">
-                                            <div class="card-body">
-                                                <h5 class="card-title placeholder-glow">
-                                                    <span class="placeholder col-6"></span>
+                                        <div className="card" aria-hidden="true">
+                                            <div className="card-body">
+                                                <h5 className="card-title placeholder-glow">
+                                                    <span className="placeholder col-6"></span>
                                                 </h5>
-                                                <p class="card-text placeholder-glow">
-                                                    <span class="placeholder col-7"></span>
-                                                    <span class="placeholder col-4"></span>
-                                                    <span class="placeholder col-4"></span>
-                                                    <span class="placeholder col-6"></span>
-                                                    <span class="placeholder col-8"></span>
+                                                <p className="card-text placeholder-glow">
+                                                    <span className="placeholder col-7"></span>
+                                                    <span className="placeholder col-4"></span>
+                                                    <span className="placeholder col-4"></span>
+                                                    <span className="placeholder col-6"></span>
+                                                    <span className="placeholder col-8"></span>
                                                 </p>
-                                                <a href="#" tabindex="-1" class="btn btn-primary disabled placeholder col-6"></a>
+                                                <a href="#" tabIndex="-1" className="btn btn-primary disabled placeholder col-6"></a>
                                             </div>
                                         </div>
                                     </Placeholder>
                                     <Placeholder animation="glow" xs={12} className="mb-3">
-                                        <div class="card" aria-hidden="true">
-                                            <div class="card-body">
-                                                <h5 class="card-title placeholder-glow">
-                                                    <span class="placeholder col-6"></span>
+                                        <div className="card" aria-hidden="true">
+                                            <div className="card-body">
+                                                <h5 className="card-title placeholder-glow">
+                                                    <span className="placeholder col-6"></span>
                                                 </h5>
-                                                <p class="card-text placeholder-glow">
-                                                    <span class="placeholder col-7"></span>
-                                                    <span class="placeholder col-4"></span>
-                                                    <span class="placeholder col-4"></span>
-                                                    <span class="placeholder col-6"></span>
-                                                    <span class="placeholder col-8"></span>
+                                                <p className="card-text placeholder-glow">
+                                                    <span className="placeholder col-7"></span>
+                                                    <span className="placeholder col-4"></span>
+                                                    <span className="placeholder col-4"></span>
+                                                    <span className="placeholder col-6"></span>
+                                                    <span className="placeholder col-8"></span>
                                                 </p>
-                                                <a href="#" tabindex="-1" class="btn btn-primary disabled placeholder col-6"></a>
+                                                <a href="#" tabIndex="-1" className="btn btn-primary disabled placeholder col-6"></a>
                                             </div>
                                         </div>
                                     </Placeholder>
                                     <Placeholder animation="glow" xs={12} className="mb-3">
-                                        <div class="card" aria-hidden="true">
-                                            <div class="card-body">
-                                                <h5 class="card-title placeholder-glow">
-                                                    <span class="placeholder col-6"></span>
+                                        <div className="card" aria-hidden="true">
+                                            <div className="card-body">
+                                                <h5 className="card-title placeholder-glow">
+                                                    <span className="placeholder col-6"></span>
                                                 </h5>
-                                                <p class="card-text placeholder-glow">
-                                                    <span class="placeholder col-7"></span>
-                                                    <span class="placeholder col-4"></span>
-                                                    <span class="placeholder col-4"></span>
-                                                    <span class="placeholder col-6"></span>
-                                                    <span class="placeholder col-8"></span>
+                                                <p className="card-text placeholder-glow">
+                                                    <span className="placeholder col-7"></span>
+                                                    <span className="placeholder col-4"></span>
+                                                    <span className="placeholder col-4"></span>
+                                                    <span className="placeholder col-6"></span>
+                                                    <span className="placeholder col-8"></span>
                                                 </p>
-                                                <a href="#" tabindex="-1" class="btn btn-primary disabled placeholder col-6"></a>
+                                                <a href="#" tabIndex="-1" className="btn btn-primary disabled placeholder col-6"></a>
                                             </div>
                                         </div>
                                     </Placeholder>
@@ -560,11 +579,26 @@ const UnloadVehicleBesicDetails = () => {
                                     </div>
                                     <div className="">
                                         <Form.Label>RR Date</Form.Label>
-                                        <Form.Control onChange={handleChange} type="datetime-local" name="rr_date" placeholder="Enter RR date" />
+                                        <Form.Control onChange={handleChange} type="date" name="rr_date" placeholder="Enter RR date" />
                                         <span className="text-danger">{errorHandler.rr_date ? errorHandler.rr_date : ""}</span>
                                     </div>
                                 </div>
                         }
+                        <div className="">
+                            <Form.Label>Gross Weight</Form.Label>
+                            <Form.Control onChange={handleChange} value={formData.gross_weight} type="text" name="gross_weight" placeholder="Enter gross weight" />
+                            <span className="text-danger">{errorHandler.gross_weight ? errorHandler.gross_weight : ""}</span>
+                        </div>
+                        <div className="">
+                            <Form.Label>Tare Weight</Form.Label>
+                            <Form.Control onChange={handleChange} value={formData.tare_weight} type="text" name="tare_weight" placeholder="Enter tare weight" />
+                            <span className="text-danger">{errorHandler.tare_weight ? errorHandler.tare_weight : ""}</span>
+                        </div>
+                        <div className="">
+                            <Form.Label>Net Weight</Form.Label>
+                            <Form.Control onChange={handleChange} value={formData.net_weight} type="text" name="net_weight" placeholder="Enter net weight" />
+                            <span className="text-danger">{errorHandler.net_weight ? errorHandler.net_weight : ""}</span>
+                        </div>
                     </Modal.Body>
                     <Modal.Footer>
                         <button className="btn btn-primary btn-sm p-2" type="submit">

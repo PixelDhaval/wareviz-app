@@ -56,6 +56,9 @@ const ShiftingCreate = () => {
     const [totalRows, setTotalRows] = useState(0);
     // error handler state
     const [errorHandler, setErrorHandler] = React.useState({
+        supplier_id: "",
+        cargo_id: "",
+        movement_type: "",
         godown_id: "",
         party_id: "",
     });
@@ -153,8 +156,13 @@ const ShiftingCreate = () => {
             setCreateShifting(formData);
             setShowModel(true);
         } else {
+            setErrorHandler({
+                party_id: "this field is required",
+                supplier_id: "this field is required",
+                cargo_id: "this field is required",
+                movement_type: "this field is required",
+            })
             setShowModel(false);
-            alert("Please select all the fields");
         }
     }
     const handleClose = () => setShowModel(false);
@@ -253,6 +261,7 @@ const ShiftingCreate = () => {
                                                     setFilters({ ...filters, party_id: opt.value })
                                                 )}
                                         />
+                                        <span className="text-danger">{errorHandler.party_id ? errorHandler.party_id : ""}</span>
                                     </div>
                                     <div className="col-sm-12 col-lg-6">
                                         <label>Supplier</label>
@@ -266,6 +275,7 @@ const ShiftingCreate = () => {
                                                     setFilters({ ...filters, supplier_id: opt.value })
                                                 )}
                                         />
+                                        <span className="text-danger">{errorHandler.supplier_id ? errorHandler.supplier_id : ""}</span>
                                     </div>
                                 </div>
 
@@ -282,6 +292,7 @@ const ShiftingCreate = () => {
                                                     setFilters({ ...filters, cargo_id: opt.value })
                                                 )}
                                         />
+                                        <span className="text-danger">{errorHandler.cargo_id ? errorHandler.cargo_id : ""}</span>
                                     </div>
                                     <div className="col-sm-12 col-lg-6">
                                         <label>Shifting Type</label>
@@ -302,6 +313,7 @@ const ShiftingCreate = () => {
                                                     }))
                                             }
                                         />
+                                        <span className="text-danger">{errorHandler.movement_type ? errorHandler.movement_type : ""}</span>
                                     </div>
                                 </div>
 
@@ -350,9 +362,6 @@ const ShiftingCreate = () => {
                                                                     {item.movement_type === "godown_shifting" ? (
                                                                         item.ref_movement_id !== '' ? (
                                                                             <div className="d-flex">
-                                                                                <span className="badge bg-soft-primary text-primary me-2">
-                                                                                    {item?.godown?.godown_name + " - " + item?.godown?.godown_no}
-                                                                                </span>
                                                                                 <div className="d-flex">
                                                                                     <span className="badge bg-soft-dark text-dark me-2">
                                                                                         {item.movement_type}
@@ -361,6 +370,10 @@ const ShiftingCreate = () => {
                                                                                         {item.type}
                                                                                     </span>
                                                                                 </div>
+                                                                                <span className="badge bg-soft-primary text-primary me-2">
+                                                                                    {item?.godown?.godown_name + " - " + item?.godown?.godown_no}
+                                                                                </span>
+
                                                                             </div>
                                                                         ) : (
                                                                             <div className="d-flex">
@@ -376,9 +389,6 @@ const ShiftingCreate = () => {
                                                                         )
                                                                     ) : (
                                                                         <div className="d-flex">
-                                                                            <span className="badge bg-soft-primary text-primary me-2">
-                                                                                {item?.godown?.godown_name + " - " + item?.godown?.godown_no}
-                                                                            </span>
                                                                             <div>
                                                                                 <span className={`badge me-2 ${item.type === "party_shifting" ? "bg-soft-primary text-primary" : "bg-soft-info text-info"}`}>
                                                                                     {item.movement_type}
@@ -387,6 +397,10 @@ const ShiftingCreate = () => {
                                                                                     {item.type}
                                                                                 </span>
                                                                             </div>
+                                                                            <span className="badge bg-soft-primary text-primary me-2">
+                                                                                {item?.godown?.godown_name + " - " + item?.godown?.godown_no}
+                                                                            </span>
+
                                                                         </div>
                                                                     )}
                                                                 </p>
@@ -503,53 +517,53 @@ const ShiftingCreate = () => {
                             </> :
                             <>
                                 <Placeholder animation="glow" xs={12} className="mb-3">
-                                    <div class="card" aria-hidden="true">
-                                        <div class="card-body">
-                                            <h5 class="card-title placeholder-glow">
-                                                <span class="placeholder col-6"></span>
+                                    <div className="card" aria-hidden="true">
+                                        <div className="card-body">
+                                            <h5 className="card-title placeholder-glow">
+                                                <span className="placeholder col-6"></span>
                                             </h5>
-                                            <p class="card-text placeholder-glow">
-                                                <span class="placeholder col-7"></span>
-                                                <span class="placeholder col-4"></span>
-                                                <span class="placeholder col-4"></span>
-                                                <span class="placeholder col-6"></span>
-                                                <span class="placeholder col-8"></span>
+                                            <p className="card-text placeholder-glow">
+                                                <span className="placeholder col-7"></span>
+                                                <span className="placeholder col-4"></span>
+                                                <span className="placeholder col-4"></span>
+                                                <span className="placeholder col-6"></span>
+                                                <span className="placeholder col-8"></span>
                                             </p>
-                                            <a href="#" tabindex="-1" class="btn btn-primary disabled placeholder col-6"></a>
+                                            <a href="#" tabIndex="-1" className="btn btn-primary disabled placeholder col-6"></a>
                                         </div>
                                     </div>
                                 </Placeholder>
                                 <Placeholder animation="glow" xs={12} className="mb-3">
-                                    <div class="card" aria-hidden="true">
-                                        <div class="card-body">
-                                            <h5 class="card-title placeholder-glow">
-                                                <span class="placeholder col-6"></span>
+                                    <div className="card" aria-hidden="true">
+                                        <div className="card-body">
+                                            <h5 className="card-title placeholder-glow">
+                                                <span className="placeholder col-6"></span>
                                             </h5>
-                                            <p class="card-text placeholder-glow">
-                                                <span class="placeholder col-7"></span>
-                                                <span class="placeholder col-4"></span>
-                                                <span class="placeholder col-4"></span>
-                                                <span class="placeholder col-6"></span>
-                                                <span class="placeholder col-8"></span>
+                                            <p className="card-text placeholder-glow">
+                                                <span className="placeholder col-7"></span>
+                                                <span className="placeholder col-4"></span>
+                                                <span className="placeholder col-4"></span>
+                                                <span className="placeholder col-6"></span>
+                                                <span className="placeholder col-8"></span>
                                             </p>
-                                            <a href="#" tabindex="-1" class="btn btn-primary disabled placeholder col-6"></a>
+                                            <a href="#" tabIndex="-1" className="btn btn-primary disabled placeholder col-6"></a>
                                         </div>
                                     </div>
                                 </Placeholder>
                                 <Placeholder animation="glow" xs={12} className="mb-3">
-                                    <div class="card" aria-hidden="true">
-                                        <div class="card-body">
-                                            <h5 class="card-title placeholder-glow">
-                                                <span class="placeholder col-6"></span>
+                                    <div className="card" aria-hidden="true">
+                                        <div className="card-body">
+                                            <h5 className="card-title placeholder-glow">
+                                                <span className="placeholder col-6"></span>
                                             </h5>
-                                            <p class="card-text placeholder-glow">
-                                                <span class="placeholder col-7"></span>
-                                                <span class="placeholder col-4"></span>
-                                                <span class="placeholder col-4"></span>
-                                                <span class="placeholder col-6"></span>
-                                                <span class="placeholder col-8"></span>
+                                            <p className="card-text placeholder-glow">
+                                                <span className="placeholder col-7"></span>
+                                                <span className="placeholder col-4"></span>
+                                                <span className="placeholder col-4"></span>
+                                                <span className="placeholder col-6"></span>
+                                                <span className="placeholder col-8"></span>
                                             </p>
-                                            <a href="#" tabindex="-1" class="btn btn-primary disabled placeholder col-6"></a>
+                                            <a href="#" tabIndex="-1" className="btn btn-primary disabled placeholder col-6"></a>
                                         </div>
                                     </div>
                                 </Placeholder>

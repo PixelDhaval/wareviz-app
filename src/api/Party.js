@@ -8,7 +8,6 @@ export const getAllParties = async (sortBy, order, page, pageSize, filters) => {
         perPage: pageSize,
         filters: filters
     }
-    console.log(data)
     return await AxiosInstance.get("/parties", {params: data}).then((res) => res.data).catch((err) => console.log(err));
 }
 

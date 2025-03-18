@@ -3,8 +3,10 @@ import { Placeholder, Modal, Form } from "react-bootstrap";
 import { FiEdit } from "react-icons/fi";
 import { updateVehicle } from "@/api/VehicleMovements";
 import Swal from "sweetalert2";
+import AsyncSelect from "react-select/async";
+import { godown } from "@/api/Godown";
 
-const BasicDetails = ({ viewVehicleList }) => {
+const BasicTab = ({ loadingDetails }) => {
     // list state state 
     const [basicDetails, setBasicDetails] = React.useState();
     const [isLoading, setIsLoading] = React.useState(false);
@@ -16,10 +18,7 @@ const BasicDetails = ({ viewVehicleList }) => {
         driver_name: "",
         driver_no: "",
         rr_number: "",
-        rr_date: "",
-        gross_weight: "",
-        tare_weight: "",
-        net_weight: ""
+        rr_date: ""
     });
     const [formData, setFormData] = useState({
         vehicle_no: "",
@@ -31,9 +30,7 @@ const BasicDetails = ({ viewVehicleList }) => {
         tare_weight: "",
         rr_date: "",
         rr_number: "",
-        gross_weight: "",
-        tare_weight: "",
-        net_weight: ""
+        godown_id: ""
     });
 
     // Fetch data from API
@@ -43,8 +40,29 @@ const BasicDetails = ({ viewVehicleList }) => {
 
     // useEffect hook for fetching data
     useEffect(() => {
-        setBasicDetails(viewVehicleList || []);
-    }, [viewVehicleList])
+        setBasicDetails(loadingDetails || []);
+    }, [loadingDetails])
+
+    // cargo list state
+    const filterGodownOption = async (inputValue) => {
+        const response = await godown(inputValue);
+        const data = response.map((item) => {
+            return { value: item.id, label: item.godown_name };
+        })
+        return data;
+    };
+    const godownOption = (inputValue) => {
+        if (inputValue.length > 1) {
+            return new Promise((resolve) => {
+                resolve(filterGodownOption(inputValue));
+            });
+        }
+        else {
+            return new Promise((resolve) => {
+                resolve([]);
+            });
+        }
+    }
 
     // handle form submit
     const handleChange = (e) => {
@@ -93,7 +111,7 @@ const BasicDetails = ({ viewVehicleList }) => {
                     isLoading ?
                         <>
                             <li className="card-body px-3 pt-3 rounded-lg shadow-sm bg-white my-2 rounded">
-                                <h5>{basicDetails.movement_type == "vehicle" ? "Unload Vehicle" : "Unload Rail"}</h5>
+                                <h5>{basicDetails.movement_type == "vehicle" ? "Load Vehicle" : (basicDetails.movement_type == "rail" ? "Load Rail" : "Load Shipment")}</h5>
                                 <div className="row ">
                                     <p className="mb-1">
                                         <span className="badge bg-soft-success text-success me-2">{basicDetails.movement_at?.split(" ")[0]}</span>
@@ -101,7 +119,7 @@ const BasicDetails = ({ viewVehicleList }) => {
                                 </div>
                                 <hr className="m-1" />
                                 <div>
-                                    <h6 className="mb-0">{basicDetails.party?.legal_name + " - "}<span className="text-secondary">{basicDetails.supplier?.trade_name}</span></h6>
+                                    <h6 className="mb-0">{basicDetails.party?.trade_name + " - "}<span className="text-secondary">{basicDetails.supplier?.trade_name}</span></h6>
                                     <p className="mb-0 text-muted">{basicDetails.cargo?.cargo_name}</p>
                                     <hr className="m-1" />
                                     {basicDetails?.movement_type === "vehicle" ? (
@@ -170,6 +188,23 @@ const BasicDetails = ({ viewVehicleList }) => {
                 <Form onSubmit={handleSubmit}>
                     <Modal.Body>
                         <div className="">
+                            <div className="">
+                                <Form.Label>Godown name</Form.Label>
+                                <AsyncSelect
+                                    cacheOptions
+                                    defaultOptions
+                                    loadOptions={godownOption}
+                                    name="godown_id"
+                                    onChange={(opt) =>
+                                        setFormData({
+                                            ...formData,
+                                            godown_id: opt.value,
+                                        },
+                                            setErrorHandler({ ...errorHandler, godown_id: opt.value })
+                                        )
+                                    }
+                                />
+                            </div>
                             {
                                 basicDetails?.movement_type == "vehicle" ?
                                     <>
@@ -193,6 +228,21 @@ const BasicDetails = ({ viewVehicleList }) => {
                                             <Form.Control onChange={handleChange} value={formData.driver_lic_no} type="text" name="driver_lic_no" placeholder="Enter license no" />
                                             <span className="text-danger">{errorHandler.driver_lic_no ? errorHandler.driver_lic_no : ""}</span>
                                         </div>
+                                        <div className="">
+                                            <Form.Label>Net Weight</Form.Label>
+                                            <Form.Control onChange={handleChange} value={formData.net_weight} type="text" name="net_weight" placeholder="Enter net weight" />
+                                            <span className="text-danger">{errorHandler.net_weight ? errorHandler.net_weight : ""}</span>
+                                        </div>
+                                        <div className="">
+                                            <Form.Label>Gross Weight</Form.Label>
+                                            <Form.Control onChange={handleChange} value={formData.gross_weight} type="text" name="gross_weight" placeholder="Enter gross weight" />
+                                            <span className="text-danger">{errorHandler.gross_weight ? errorHandler.gross_weight : ""}</span>
+                                        </div>
+                                        <div className="">
+                                            <Form.Label>Tare Weight</Form.Label>
+                                            <Form.Control onChange={handleChange} value={formData.tare_weight} type="text" name="tare_weight" placeholder="Enter tare weight" />
+                                            <span className="text-danger">{errorHandler.tare_weight ? errorHandler.tare_weight : ""}</span>
+                                        </div>
                                     </>
                                     :
                                     <>
@@ -213,21 +263,7 @@ const BasicDetails = ({ viewVehicleList }) => {
                                         </div>
                                     </>
                             }
-                            <div className="">
-                                <Form.Label>Gross Weight</Form.Label>
-                                <Form.Control onChange={handleChange} value={formData.gross_weight} type="text" name="gross_weight" placeholder="Enter gross weight" />
-                                <span className="text-danger">{errorHandler.gross_weight ? errorHandler.gross_weight : ""}</span>
-                            </div>
-                            <div className="">
-                                <Form.Label>Tare Weight</Form.Label>
-                                <Form.Control onChange={handleChange} value={formData.tare_weight} type="text" name="tare_weight" placeholder="Enter tare weight" />        
-                                <span className="text-danger">{errorHandler.tare_weight ? errorHandler.tare_weight : ""}</span>
-                            </div>
-                            <div className="">
-                                <Form.Label>Net Weight</Form.Label>
-                                <Form.Control onChange={handleChange} value={formData.net_weight} type="text" name="net_weight" placeholder="Enter net weight" />        
-                                <span className="text-danger">{errorHandler.net_weight ? errorHandler.net_weight : ""}</span>                                
-                            </div>  
+
                         </div>
                     </Modal.Body>
                     <Modal.Footer>
@@ -244,4 +280,4 @@ const BasicDetails = ({ viewVehicleList }) => {
     );
 };
 
-export default BasicDetails;
+export default BasicTab;

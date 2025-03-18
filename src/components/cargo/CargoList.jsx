@@ -66,7 +66,6 @@ const CargoList = () => {
             setFilterValue({ field: filterValue.field, value: "" });
         }
     };
-    console.log(filters);
 
     // remove badge filter function
     const handleRemoveFilter = (index) => {
@@ -79,7 +78,6 @@ const CargoList = () => {
             const response = await getAllcargos(sortConfig.sortBy, sortConfig.order, page, pageSize, filters);
             setCargoList(response?.data);
             setTotalRows(response?.total);
-            console.log(response);
         }
         fetchCargos();
     }, [page, pageSize, sortConfig, filters]);

@@ -18,7 +18,6 @@ const WeightReceiptTab = ({ shiftingDetails }) => {
     useEffect(() => {
         setReceiptDetails(shiftingDetails?.weigh_receipt || []);
     }, [shiftingDetails]);
-    console.log(receiptDetails);
 
     // handle input changes
     const handleInput = (e) => {

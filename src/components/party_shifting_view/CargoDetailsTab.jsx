@@ -20,7 +20,6 @@ const CargoDetailsTab = ({ shiftingDetails }) => {
     // Load data when shiftingDetails changes
     useEffect(() => {
         setCargoData(shiftingDetails?.cargo_detail || []);
-        console.log(shiftingDetails?.cargo_detail);
         if (shiftingDetails?.cargo_detail != null) {
             setIsData(true);
             setFlag(false);
@@ -38,12 +37,12 @@ const CargoDetailsTab = ({ shiftingDetails }) => {
     const handleChange = (e) => {
         const { name, value } = e.target;
         let updatedData = { ...cargoData, [name]: value };
+        updatedData.vehicle_movement_id = shiftingDetails?.id;
 
         if (name === "bags_qty" || name === "bags_weight") {
             const bagsQty = parseFloat(updatedData.bags_qty) || 0;
             const bagsWeight = parseFloat(updatedData.bags_weight) || 0;
             updatedData.total_weight = (bagsQty * bagsWeight).toFixed(2);
-            updatedData.vehicle_movement_id = shiftingDetails?.id;
         }
 
         setCargoData(updatedData);
@@ -120,11 +119,12 @@ const CargoDetailsTab = ({ shiftingDetails }) => {
                     {/* Show Form if Flag is true (Edit Mode) or No Data */}
                     {!isData ? (
                         <>
-                            <div>
+                            <div className="d-flex gap-2">
                                 <label htmlFor="is_bulk">Is Bulk</label>
-                                <input
-                                    type="checkbox"
+                                <Form.Check
+                                    type="switch"
                                     name="is_bulk"
+                                    id="is_bulk"
                                     checked={isBulk}
                                     onChange={handleCheckboxChange}
                                 />
@@ -204,30 +204,31 @@ const CargoDetailsTab = ({ shiftingDetails }) => {
                         </>
                     ) : (
                         // Show Table if Data Exists
-                        <div style={{ overflowX: "scroll",width: "100%" }}>
-                            <table className="table">
-                                <thead>
-                                    <tr>
-                                        <th>Bags Qty</th>
-                                        <th>Bags Weight</th>
-                                        <th>Total Weight</th>
-                                        <th>Bags Type</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>{cargoData.bags_qty}</td>
-                                        <td>{cargoData.bags_weight}</td>
-                                        <td>{cargoData.total_weight}</td>
-                                        <td>{cargoData.bags_type}</td>
-                                        <td className="d-flex gap-2">
-                                            <button className="btn btn-primary btn-sm" onClick={() => handleEdit(cargoData)}>Edit</button>
-                                            <button className="btn btn-danger btn-sm" onClick={() => handleDelete(cargoData)}>Delete</button>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <div className="">
+                            <span className="badge badge-soft-success text-success me-2">{cargoData.bags_type}</span>
+                            {
+                                cargoData.is_bulk == 0 && cargoData.bags_qty != 0 && cargoData.bags_weight != 0 ?
+                                    <div className="row pt-2">
+                                        <div className="col-auto col-lg-4">
+                                            <strong>Bags Qty :</strong> {cargoData.bags_qty}
+                                        </div>
+                                        <div className="col-auto col-lg-4">
+                                            <strong>Bags Weight :</strong> {cargoData.bags_weight}
+                                        </div>
+                                        <div className="col-auto col-lg-4">
+                                            <strong>Total Weight :</strong> {cargoData.total_weight}
+                                        </div>
+                                    </div>
+                                    :
+                                    <>
+                                        <strong>Total Weight :</strong> {cargoData.total_weight}
+                                    </>
+                            }
+                            <hr />
+                            <div className="d-flex gap-2">
+                                <button className="btn btn-primary btn-sm" onClick={() => handleEdit(cargoData)}>Edit</button>
+                                <button className="btn btn-danger btn-sm" onClick={() => handleDelete(cargoData)}>Delete</button>
+                            </div>
                         </div>
                     )}
                 </>

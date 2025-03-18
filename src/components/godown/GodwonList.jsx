@@ -125,7 +125,6 @@ const GodownList = () => {
             )
         }
     })
-    console.log(godownList);
 
     return (
         <>

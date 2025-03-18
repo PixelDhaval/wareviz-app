@@ -527,7 +527,7 @@ const BasicDetailsTab = ({ shiftingDetails }) => {
                         </div>
                         <div>
                             <label htmlFor="">Movement Date</label>
-                            <input type="datetime-local" className="form-control" id="movement_at" name="movement_at" value={formData.movement_at} onChange={(e) => setFormData({ ...formData, movement_at: e.target.value })} />
+                            <input type="date" className="form-control" id="movement_at" name="movement_at" value={formData.movement_at} onChange={(e) => setFormData({ ...formData, movement_at: e.target.value })} />
                         </div>
                     </Modal.Body>
                     <Modal.Footer>

@@ -1,3 +1,5 @@
+import { FaTruckLoading } from "react-icons/fa";
+
 export const menuList = [
     {
         id: 0,
@@ -36,6 +38,15 @@ export const menuList = [
     },
     {
         id: 2,
+        name:"Load Vehicle",    
+        path: "/load/create",
+        icon: "feather-truck",
+        dropdownMenu: [
+           
+        ]
+    },
+    {
+        id: 3,
         name: "Party Shifting",
         path: "/shifting/create",
         icon: "feather-clock",

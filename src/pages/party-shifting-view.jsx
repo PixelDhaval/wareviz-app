@@ -6,8 +6,6 @@ import React from "react";
 const PartyShiftingView = ({ }) => {
     const url = new URLSearchParams(window.location.search);
     const id = url.get("id");
-    console.log(id);
-
     return (
         <>
             <PageHeader>

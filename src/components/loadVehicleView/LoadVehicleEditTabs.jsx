@@ -1,33 +1,27 @@
 import React, { useEffect } from "react";
-import BasicDetailsTab from "./BasicDetailsTab";
-import CargoDetailsTab from "./CargoDetailsTab";
-import WeightReceiptTab from "./WeightReceiptTab";
-import InspectionTab from "./InspectionTab";
 import { Tab, Tabs } from "react-bootstrap";
 import { getVehicleMovements } from "@/api/VehicleMovements";
+import BasicTab from "./BasicTab";
+import CargoDetailsTab from "./CargoDetailsTab";
+import WeightReceiptTab from "./WeightReceiptTab";
+import InspectionDetailsTab from "./InspectionDetailsTab";
 
-const ShiftingViewTabs = () => {
+const LoadVehicleEditTabs = () => {
     const url = new URLSearchParams(window.location.search);
     const id = url.get("id");
 
     // view shifting details
-    const [shiftingDetails, setShiftingDetails] = React.useState([]);
+    const [loadingDetails, setLoadingDetails] = React.useState(false);
     useEffect(() => {
         const fetchShiftingDetails = async () => {
             const response = await getVehicleMovements(id);
-            setShiftingDetails(response);
+            setLoadingDetails(response);
         };
         fetchShiftingDetails();
-    },[id]);
+    }, [id]);
 
     return (
         <>
-            <div className="card">
-                <div className="card-header">
-                    <h5 className="card-title">
-                        View Shifting
-                    </h5>
-                </div>
                 <div className="card-body">
                     <Tabs
                         defaultActiveKey="besic_details"
@@ -36,22 +30,21 @@ const ShiftingViewTabs = () => {
                         fill
                     >
                         <Tab eventKey="besic_details" title="Basic Details">
-                            <BasicDetailsTab shiftingDetails={shiftingDetails} />
+                            <BasicTab loadingDetails={loadingDetails} />
                         </Tab>
                         <Tab eventKey="cargo_details" title="Cargo Details">
-                            <CargoDetailsTab shiftingDetails={shiftingDetails} />
+                            <CargoDetailsTab loadingDetails={loadingDetails} />
                         </Tab>
                         <Tab eventKey="weight_receipt" title="Weight Receipt">
-                            <WeightReceiptTab shiftingDetails={shiftingDetails} />
+                            <WeightReceiptTab loadingDetails={loadingDetails} />
                         </Tab>
                         <Tab eventKey="inspection" title="Inspection">
-                            <InspectionTab shiftingDetails={shiftingDetails} />
+                            <InspectionDetailsTab loadingDetails={loadingDetails} />
                         </Tab>
                     </Tabs>
                 </div>
-            </div>
         </>
     )
 }
 
-export default ShiftingViewTabs;
+export default LoadVehicleEditTabs;

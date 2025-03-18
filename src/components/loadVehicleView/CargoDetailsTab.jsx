@@ -2,8 +2,9 @@ import React, { useEffect, useState } from "react";
 import { Placeholder, Form } from "react-bootstrap";
 import { createCargoDetails, updateCargoDetails, deleteCargoDetails } from "@/api/CargoDetails";
 import Swal from "sweetalert2";
+import Select from "react-select";
 
-const CargoDetails = ({ viewVehicleList }) => {
+const CargoDetailsTab = ({ loadingDetails }) => {
     const [cargoData, setCargoData] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isData, setIsData] = useState(false);
@@ -17,16 +18,16 @@ const CargoDetails = ({ viewVehicleList }) => {
         }, 1000);
     }, []);
 
-    // Load data when viewVehicleList changes
+    // Load data when loadingDetails changes
     useEffect(() => {
-        setCargoData(viewVehicleList?.cargo_detail || []);
-        if (viewVehicleList?.cargo_detail != null) {
+        setCargoData(loadingDetails?.cargo_detail || []);
+        if (loadingDetails?.cargo_detail != null) {
             setIsData(true);
             setFlag(false);
         } else {
             setIsData(false);
         }
-    }, [viewVehicleList]);
+    }, [loadingDetails]);
 
     // Handle bulk checkbox
     const handleCheckboxChange = () => {
@@ -42,7 +43,7 @@ const CargoDetails = ({ viewVehicleList }) => {
             const bagsQty = parseFloat(updatedData.bags_qty) || 0;
             const bagsWeight = parseFloat(updatedData.bags_weight) || 0;
             updatedData.total_weight = (bagsQty * bagsWeight).toFixed(2);
-            updatedData.vehicle_movement_id = viewVehicleList?.id;
+            updatedData.vehicle_movement_id = loadingDetails?.id;
         }
 
         setCargoData(updatedData);
@@ -87,15 +88,27 @@ const CargoDetails = ({ viewVehicleList }) => {
 
     // Handle delete button click
     const handleDelete = async (data) => {
-        const response = await deleteCargoDetails(data.id);
-        if (response.status === 200) {
-            Swal.fire("Success", "Cargo details deleted successfully", "success");
-            setCargoData([]);
-            setIsData(false);
-            setFlag(false);
-        } else {
-            Swal.fire("Error", response.data?.message, "error");
-        }
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const response = deleteCargoDetails(data.id);
+                if (response.status === 200) {
+                    Swal.fire("Success", "Cargo details deleted successfully", "success");
+                    setCargoData([]);
+                    setIsData(false);
+                    setFlag(false);
+                } else {
+                    Swal.fire("Error", response.data?.message, "error");
+                }
+            }
+        })
     };
 
     return (
@@ -164,16 +177,14 @@ const CargoDetails = ({ viewVehicleList }) => {
                                         </div>
                                         <div className="col-6 col-lg-3">
                                             <Form.Label>Bags Type</Form.Label>
-                                            <select
+                                            <Select
                                                 name="bags_type"
-                                                className="form-select"
-                                                value={cargoData.bags_type || ""}
-                                                onChange={handleChange}
-                                            >
-                                                <option value="">Select option</option>
-                                                <option value="pp">PP</option>
-                                                <option value="jute">Jute</option>
-                                            </select>
+                                                options={[
+                                                    { value: 'pp', label: 'PP' },
+                                                    { value: "jute", label: "Jute" },
+                                                ]}
+                                                onChange={(opt) => setCargoData({ ...cargoData, bags_type: opt.value })}
+                                            />
                                         </div>
                                     </div>
                                 ) : (
@@ -237,4 +248,4 @@ const CargoDetails = ({ viewVehicleList }) => {
     );
 };
 
-export default CargoDetails;
+export default CargoDetailsTab;
