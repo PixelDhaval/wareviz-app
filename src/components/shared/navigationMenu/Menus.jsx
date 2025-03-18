@@ -55,9 +55,12 @@ const Menus = () => {
                             <span className="nxl-mtext" style={{ paddingLeft: "2.5px" }}>
                                 {name}
                             </span>
-                            <span className="nxl-arrow fs-16">
+                            {dropdownMenu.length > 0 ? (
+                                <span className="nxl-arrow fs-16">
                                 <FiChevronRight />
                             </span>
+                            ): ""}
+                            
                         </Link>
                         <ul
                             className={`nxl-submenu ${openDropdown === name ? "nxl-menu-visible" : "nxl-menu-hidden"}`}
@@ -74,6 +77,7 @@ const Menus = () => {
                                             >
                                                 <Link to={path} className={`nxl-link text-capitalize`}>
                                                     <span className="nxl-mtext">{name}</span>
+                                                    
                                                     <span className="nxl-arrow">
                                                         <i>
                                                             {" "}

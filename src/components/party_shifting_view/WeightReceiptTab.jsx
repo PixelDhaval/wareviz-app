@@ -33,8 +33,15 @@ const WeightReceiptTab = ({ shiftingDetails }) => {
         console.log(response);
         if (response.status === 200) {
             Swal.fire("Success", "Weight receipt added successfully", "success");
-            setReceiptData(response.data);
-            setReceiptDetails(response.data);
+            // setReceiptData(response.data?.vehicle_movement?.weigh_receipt);
+            setReceiptDetails(response.data?.vehicle_movement?.weigh_receipt);
+            setReceiptData({
+                ...receiptData,
+                vehicle_movement_id: shiftingDetails.id,
+                weigh_receipt_no: "",
+                weigh_receipt_date: "",
+                weigh_bridge: ""
+            });
         }
         else {
             Swal.fire("Error", response.data?.message, "error");
@@ -66,8 +73,15 @@ const WeightReceiptTab = ({ shiftingDetails }) => {
                 showConfirmButton: false,
                 timer: 800
             });
-            setReceiptDetails(response.data);
+            setReceiptDetails(response.data?.vehicle_movement?.weigh_receipt);
             setFlag(false);
+            setReceiptData({
+                ...receiptData,
+                vehicle_movement_id: shiftingDetails.id,
+                weigh_receipt_no: "",
+                weigh_receipt_date: "",
+                weigh_bridge: ""
+            });
         }
         else {
             alert(response.message);
@@ -86,21 +100,10 @@ const WeightReceiptTab = ({ shiftingDetails }) => {
             cancelButtonColor: "#d33",
             confirmButtonText: "Yes, delete it!",
         }).then((result) => {
-            if (result.isConfirmed) {
-                const response = deleteWeightReceipt(id);
-                console.log(response);
-                if (response.status === 200) {
-                    Swal.fire({
-                        title: "Weight receipt deleted successfully",
-                        icon: "success",
-                        showConfirmButton: false,
-                        timer: 800
-                    });
-                    setReceiptDetails(receiptDetails.filter(item => item.id !== id));
-                }
-                else {
-                    alert(response.message);
-                }
+            if  (result.isConfirmed) {
+                const response = deleteWeightReceipt(id, shiftingDetails.id);
+                setReceiptDetails(receiptDetails.filter(item => item.id !== id));
+                Swal.fire('Deleted!', 'weight receipt has been deleted.', 'success');
             }
         })
     }
@@ -142,7 +145,7 @@ const WeightReceiptTab = ({ shiftingDetails }) => {
                 }
             </Form>
 
-            <div className="my-2">
+            <div className="my-2" style={{ overflowX: "scroll",width: "100%" }}>
                 <table className="table table-striped">
                     <thead>
                         <tr>

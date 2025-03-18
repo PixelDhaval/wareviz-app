@@ -64,7 +64,7 @@ const ShiftingCreate = () => {
     const filterPartyOption = async (inputValue) => {
         const response = await party(inputValue);
         const data = response.map((item) => {
-            return { value: item.id, label: item.legal_name };
+            return { value: item.id, label: item.trade_name };
         })
         return data;
     };
@@ -187,7 +187,7 @@ const ShiftingCreate = () => {
             })
             console.log(response.data?.id);
             setShowModel(false);
-            navigate(`/party_shifting/view?id=${response.data?.id}`);
+            navigate(`/shifting/view?id=${response.data?.id}`);
         }
         else {
             setErrorHandler(response.data?.errors);
@@ -219,7 +219,7 @@ const ShiftingCreate = () => {
         { name: "Movement At", selector: row => row.movement_at, sortable: true, style: { whiteSpace: "nowrap", width: "auto" } },
     ];
     const data = ShiftingList.map(item => ({
-        party_name: <Link to={`/party_shifting/view?id=${item.id}`} className="mb-0">{item.party?.legal_name + " - "}<span className="text-secondary">{item.supplier?.trade_name}</span></Link>,
+        party_name: <Link to={`/shifting/view?id=${item.id}`} className="mb-0">{item.party?.trade_name + " - "}<span className="text-secondary">{item.supplier?.trade_name}</span></Link>,
         supplier_name: item.supplier?.trade_name,
         cargo_name: item.cargo?.cargo_name,
         movement_type: item.movement_type,
@@ -344,14 +344,14 @@ const ShiftingCreate = () => {
                                             <ul className={`list-unstyled`}>
                                                 {ShiftingList.map((item, index) => (
                                                     <li key={index} className="card-body px-3 pt-3 rounded-lg shadow-sm bg-white my-2 rounded">
-                                                        <div className="row">
-                                                            <div className="col-sm-12 col-lg-6">
+                                                        <div className="row justify-content-between">
+                                                            <div className="col-auto col-lg-6">
                                                                 <p className="mb-1">
                                                                     {item.movement_type === "godown_shifting" ? (
                                                                         item.ref_movement_id !== '' ? (
                                                                             <div className="d-flex">
                                                                                 <span className="badge bg-soft-primary text-primary me-2">
-                                                                                    {item?.godown?.godown_name + " - " + item?.godown?.godown_no} {item.ref_movement?.godown?.godown_name + " - " + item.ref_movement?.godown?.godown_no}
+                                                                                    {item?.godown?.godown_name + " - " + item?.godown?.godown_no}
                                                                                 </span>
                                                                                 <div className="d-flex">
                                                                                     <span className="badge bg-soft-dark text-dark me-2">
@@ -391,7 +391,7 @@ const ShiftingCreate = () => {
                                                                     )}
                                                                 </p>
                                                             </div>
-                                                            <div className="col-sm-12 col-lg-6">
+                                                            <div className="col-auto col-lg-6">
                                                                 <p className="mb-1 text-end">
                                                                     <span className="badge bg-soft-success text-success me-2">{item.movement_at?.split(" ")[0]}</span>
                                                                 </p>
@@ -401,26 +401,27 @@ const ShiftingCreate = () => {
                                                         <div>
                                                             <h6 className="mb-0">
                                                                 {item.type === "load" ? (
-                                                                    <Link to={`/party_shifting/view?id=${item.id}`}>
-                                                                        {item.party?.legal_name + " - "}
+                                                                    <Link to={`/shifting/view?id=${item.id}`}>
+                                                                        {item.party?.trade_name + " - "}
                                                                     </Link>
                                                                 ) : (
-                                                                    <Link to={`/party_shifting/view?id=${item.ref_movement_id}`}>
-                                                                        {item.party?.legal_name + " - "}
+                                                                    <Link to={`/shifting/view?id=${item.ref_movement_id}`}>
+                                                                        {item.party?.trade_name + " - "}
                                                                     </Link>
                                                                 )}
                                                                 <span className="text-secondary">{item.supplier?.trade_name}</span>
                                                             </h6>
                                                             <p className="mb-0 text-muted">{item.cargo?.cargo_name}</p>
+                                                            <strong>Bags</strong>
                                                             <div className="row pb-3">
                                                                 {item.cargo_detail?.is_bulk ? (
                                                                     <p className="mb-0">T : {item.cargo_detail?.total_weight}</p>
                                                                 ) : (
                                                                     <>
-                                                                        <p className="mb-0 col-sm-12 col-lg-3">Type: {item.cargo_detail?.bags_type}</p>
-                                                                        <p className="mb-0 col-sm-12 col-lg-3">Q: {item.cargo_detail?.bags_qty}</p>
-                                                                        <p className="mb-0 col-sm-12 col-lg-3">W: {item.cargo_detail?.bags_weight}</p>
-                                                                        <p className="mb-0 col-sm-12 col-lg-3">T: {item.cargo_detail?.total_weight}</p>
+                                                                        <p className="mb-0 col-auto col-lg-3">Type: {item.cargo_detail?.bags_type}</p>
+                                                                        <p className="mb-0 col-auto col-lg-3">Q: {item.cargo_detail?.bags_qty}</p>
+                                                                        <p className="mb-0 col-auto col-lg-3">W: {item.cargo_detail?.bags_weight}</p>
+                                                                        <p className="mb-0 col-auto col-lg-3">T: {item.cargo_detail?.total_weight}</p>
                                                                     </>
                                                                 )}
                                                             </div>

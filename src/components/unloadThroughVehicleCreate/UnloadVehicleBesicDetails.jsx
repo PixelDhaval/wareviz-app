@@ -4,6 +4,7 @@ import Select from "react-select";
 import { party } from "@/api/Party";
 import { cargo } from "@/api/Cargo";
 import { FiEdit, FiList, FiPlus, FiTable, FiTerminal, FiTruck } from "react-icons/fi";
+import { MdDirectionsRailway } from "react-icons/md";
 import { Form, Placeholder, Modal } from "react-bootstrap";
 import { getAllVehicleMovements } from "@/api/VehicleMovements";
 import { createUnloadVehicle } from "@/api/VehicleMovements";
@@ -53,7 +54,6 @@ const UnloadVehicleBesicDetails = () => {
     // row per page state
     const [perPage, setPerPage] = React.useState(10);
     const [page, setPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
     const [totalRows, setTotalRows] = useState(0);
 
     // set timeout for loading & useEffect
@@ -149,12 +149,12 @@ const UnloadVehicleBesicDetails = () => {
 
     useEffect(() => {
         const fetchUnloadVehicles = async () => {
-            const response = await getAllVehicleMovements(filters, pageSize, page);
+            const response = await getAllVehicleMovements(filters, perPage, page);
             setUnloadVehicleList(response?.data?.data || []);
             setTotalRows(response?.data?.total || 0); // Update total rows
         };
         fetchUnloadVehicles();
-    }, [filters, pageSize, page]);
+    }, [filters, perPage, page]);
     // list pagination setup
     const handlePageClick = (event) => {
         setPage(event.selected + 1); // react-paginate starts from 0, API expects from 1
@@ -182,13 +182,14 @@ const UnloadVehicleBesicDetails = () => {
                 timer: 800
             })
             console.log(response.data?.id);
-            navigate(`/unload_vehicle/view?id=${response.data?.id}`);
+            navigate(`/unload/view?id=${response.data?.id}`);
         }
         else {
             setErrorHandler(response.data?.errors);
         }
     }
 
+    // handle table and list view
     const [tableView, setTableView] = React.useState(false);
     const [isActiveList, setIsActiveList] = React.useState(true);
     const [isActiveTable, setIsActiveTable] = React.useState(false);
@@ -216,7 +217,7 @@ const UnloadVehicleBesicDetails = () => {
     ];
     const data = unloadVehicleList.map(item => ({
         vehicle_no: item.vehicle_no,
-        party_name: <Link to={`/unload_vehicle/view?id=${item.id}`} className="mb-0">{item.party?.trade_name + " - "}<span className="text-secondary">{item.supplier?.trade_name}</span></Link>,
+        party_name: <Link to={`/unload/view?id=${item.id}`} className="mb-0">{item.party?.trade_name + " - "}<span className="text-secondary">{item.supplier?.trade_name}</span></Link>,
         godown_name: item.godown?.godown_name,
         movement_at: item.movement_at,
         supplier_name: item.supplier?.trade_name,
@@ -304,14 +305,14 @@ const UnloadVehicleBesicDetails = () => {
                             <h5 className="card-title mb-0">Unload Vehicle</h5>
                             <div className="d-flex justify-content-center gap-2">
                                 <button
-                                    className={`btn btn-sm p-1 my-2 gap-1 ${isActiveList ? 'btn-outline-primary' : 'btn-primary'}`}
+                                    className={`btn btn-sm p-1 my-2 gap-1 ${!isActiveList ? 'border border-primary text-primary' : 'btn-primary'}`}
                                     type="button"
                                     onClick={handleListView}
                                 >
                                     <FiList size={20} />
                                 </button>
                                 <button
-                                    className={`btn btn-sm p-1 my-2 gap-1 ${isActiveTable ? 'btn-outline-primary' : 'btn-primary'}`}
+                                    className={`btn btn-sm p-1 my-2 gap-1 ${!isActiveTable ? 'border border-primary text-primary' : 'btn-primary'}`}
                                     type="button"
                                     onClick={handleTableView}
                                 >
@@ -352,7 +353,7 @@ const UnloadVehicleBesicDetails = () => {
                                                                                     :
                                                                                     <span className="badge bg-soft-warning text-warning me-2">{item.rr_number + " - " + item.rr_date}</span>
                                                                             }
-                                                                            <span className="badge bg-soft-info text-info me-2"><FiTruck size={12} className="" /> {item.movement_type}</span>
+                                                                            <span className="badge bg-soft-info text-info me-2"><MdDirectionsRailway size={12} className="" /> {item.movement_type}</span>
                                                                         </p>
                                                                 }
                                                             </div>
@@ -365,7 +366,7 @@ const UnloadVehicleBesicDetails = () => {
                                                         </div>
                                                         <hr className="m-1" />
                                                         <div>
-                                                            <Link to={`/unload_vehicle/view?id=${item.id}`} className="mb-0">{item.party?.trade_name + " - "}<span className="text-secondary">{item.supplier?.trade_name}</span></Link>
+                                                            <Link to={`/unload/view?id=${item.id}`} className="mb-0">{item.party?.trade_name + " - "}<span className="text-secondary">{item.supplier?.trade_name}</span></Link>
                                                             <p className="mb-0 text-muted">{item.cargo?.cargo_name}</p>
                                                             <div className="row">
                                                                 <strong>Bags</strong>
@@ -444,12 +445,13 @@ const UnloadVehicleBesicDetails = () => {
                                             <>
                                                 <DataTable
                                                     columns={columns}
-                                                    data={data} // Ensure data is properly set
+                                                    data={data}
                                                     pagination
-                                                    rowsPerPageOptions={[5, 10, 25, 50, 100]}
-                                                    onChangeRowsPerPage={(newPageSize, newPage) => {
-                                                        setPageSize(newPageSize); // Update pageSize instead of perPage
-                                                        setPage(1); // Reset to page 1 to avoid out-of-range issues
+                                                    paginationPerPage={perPage}
+                                                    paginationRowsPerPageOptions={[5, 10, 15, 20, 25, 50, 100]}
+                                                    onChangeRowsPerPage={(newPerPage) => {
+                                                        setPerPage(newPerPage);
+                                                        setPage(1);
                                                     }}
                                                     currentPage={page}
                                                     paginationTotalRows={totalRows}

@@ -70,23 +70,23 @@ export const router = createBrowserRouter([
                 element: <GodownEditPage />
             },
             {
-                path: "unload_vehicle/create",
+                path: "/unload/create",
                 element: <UnloadThroughVehicleCreate />
             },
             {
-                path: "unload_vehicle/view",
+                path: "/unload/view",
                 element: <UnloadThroughVehicleTabs />
             },
             {
-                path: "/party_shifting/list",
+                path: "/shifting/list",
                 element: <PartyShiftingList />
             },
             {
-                path: "/party_shifting/create",  
+                path: "/shifting/create",  
                 element: <PartyShiftingCreate />
             },
             {
-                path: "/party_shifting/view",
+                path: "/shifting/view",
                 element: <PartyShiftingView />
             }
         ]

@@ -43,6 +43,7 @@ const CargoDetailsTab = ({ shiftingDetails }) => {
             const bagsQty = parseFloat(updatedData.bags_qty) || 0;
             const bagsWeight = parseFloat(updatedData.bags_weight) || 0;
             updatedData.total_weight = (bagsQty * bagsWeight).toFixed(2);
+            updatedData.vehicle_movement_id = shiftingDetails?.id;
         }
 
         setCargoData(updatedData);
@@ -66,7 +67,7 @@ const CargoDetailsTab = ({ shiftingDetails }) => {
     // Handle edit button click
     const handleEdit = (data) => {
         setCargoData(data);
-        setFlag(true); 
+        setFlag(true);
         setIsData(false);
     };
 
@@ -188,44 +189,46 @@ const CargoDetailsTab = ({ shiftingDetails }) => {
                                     </div>
                                 )}
                                 {
-                                    !flag ? 
-                                    <button className="btn btn-primary btn-sm p-2 my-2">Add</button>
-                                    :
-                                    <div className="d-flex gap-2">
-                                        <button className="btn btn-primary btn-sm p-2 my-2">Update</button>
-                                        <button className="btn btn-danger btn-sm p-2 my-2" onClick={() => {
-                                            setFlag(false); 
-                                            setIsData(true);
-                                        }}>cancel</button>
-                                    </div>
+                                    !flag ?
+                                        <button className="btn btn-primary btn-sm p-2 my-2">Add</button>
+                                        :
+                                        <div className="d-flex gap-2">
+                                            <button className="btn btn-primary btn-sm p-2 my-2">Update</button>
+                                            <button className="btn btn-danger btn-sm p-2 my-2" onClick={() => {
+                                                setFlag(false);
+                                                setIsData(true);
+                                            }}>cancel</button>
+                                        </div>
                                 }
                             </Form>
                         </>
                     ) : (
                         // Show Table if Data Exists
-                        <table className="table">
-                            <thead>
-                                <tr>
-                                    <th>Bags Qty</th>
-                                    <th>Bags Weight</th>
-                                    <th>Total Weight</th>
-                                    <th>Bags Type</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>{cargoData.bags_qty}</td>
-                                    <td>{cargoData.bags_weight}</td>
-                                    <td>{cargoData.total_weight}</td>
-                                    <td>{cargoData.bags_type}</td>
-                                    <td className="d-flex gap-2">
-                                        <button className="btn btn-primary btn-sm" onClick={() => handleEdit(cargoData)}>Edit</button>
-                                        <button className="btn btn-danger btn-sm" onClick={() => handleDelete(cargoData)}>Delete</button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <div style={{ overflowX: "scroll",width: "100%" }}>
+                            <table className="table">
+                                <thead>
+                                    <tr>
+                                        <th>Bags Qty</th>
+                                        <th>Bags Weight</th>
+                                        <th>Total Weight</th>
+                                        <th>Bags Type</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>{cargoData.bags_qty}</td>
+                                        <td>{cargoData.bags_weight}</td>
+                                        <td>{cargoData.total_weight}</td>
+                                        <td>{cargoData.bags_type}</td>
+                                        <td className="d-flex gap-2">
+                                            <button className="btn btn-primary btn-sm" onClick={() => handleEdit(cargoData)}>Edit</button>
+                                            <button className="btn btn-danger btn-sm" onClick={() => handleDelete(cargoData)}>Delete</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     )}
                 </>
             )}

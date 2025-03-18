@@ -28,31 +28,18 @@ export const menuList = [
     {
         id: 1,
         name:"Unload Vehicle",    
-        path: "#",
+        path: "/unload/create",
         icon: "feather-truck",
         dropdownMenu: [
-            {
-                id: 1,
-                name: "Unload Vehicle",
-                path: "/unload_vehicle/create",
-                subdropdownMenu: false
-            },
            
         ]
     },
     {
         id: 2,
         name: "Party Shifting",
-        path: "#",
+        path: "/shifting/create",
         icon: "feather-clock",
-        dropdownMenu: [
-            {
-                id: 1,
-                name: "Party Shifting",
-                path: "/party_shifting/create",
-                subdropdownMenu: false
-            },
-        ]
+        dropdownMenu: []
     },
     {
         id: 10,
