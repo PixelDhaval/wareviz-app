@@ -3,6 +3,7 @@ import { Form } from "react-bootstrap";
 import { createVehicleInspection, updateVehicleInspection, deleteVehicleInspection } from "@/api/VehicleInspections";
 import Swal from "sweetalert2";
 import { FiEdit, FiTrash } from "react-icons/fi";
+import Select from "react-select";
 
 const InspectionDetails = ({ viewVehicleList }) => {
     // list state state
@@ -45,7 +46,17 @@ const InspectionDetails = ({ viewVehicleList }) => {
                 showConfirmButton: false,
                 timer: 800
             });
-            setInspectionDetails(response.data);
+            setInspectionDetails(response.data?.vehicle_movement?.vehicle_inspection);
+            setFormData({
+                ...formData,
+                vehicle_movement_id: viewVehicleList.id,
+                inspection_no: "",
+                inspection_date: "",
+                inspection_by: "",
+                inspection_type: "",
+                inspection_result: "",
+                remark: ""
+            });
         }
         else {
             alert(response.message);
@@ -80,12 +91,41 @@ const InspectionDetails = ({ viewVehicleList }) => {
                 showConfirmButton: false,
                 timer: 800
             });
-            setInspectionDetails(response.data);
+            setInspectionDetails(response.data?.vehicle_movement?.vehicle_inspection);
             setFlag(false);
+            setFormData({
+                ...formData,
+                vehicle_movement_id: viewVehicleList.id,
+                inspection_no: "",
+                inspection_date: "",
+                inspection_by: "",
+                inspection_type: "",
+                inspection_result: "",
+                remark: ""
+            });
         }
         else {
             alert(response.message);
         }
+    }
+
+    // handel weight receipt delete
+    const handleDelete = async (id) => {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const response = deleteVehicleInspection(id);
+                setInspectionDetails(inspectionDetails.filter(item => item.id !== id));
+                Swal.fire('Deleted!', 'inspection has been deleted.', 'success');
+            }
+        })
     }
 
     return (
@@ -102,7 +142,7 @@ const InspectionDetails = ({ viewVehicleList }) => {
                             <Form.Control onChange={handleChange} type="date" value={formattedDate} name="inspection_date" placeholder="Enter inspection date" />
                         </div>
                         <div className="col-12 col-lg-4">
-                            <Form.Label>Inspection Name</Form.Label>
+                            <Form.Label>Inspector Name</Form.Label>
                             <Form.Control value={formData.inspection_by} onChange={handleChange} type="text" name="inspection_by" placeholder="Enter inspection Name" />
                         </div>
                     </div>
@@ -110,15 +150,19 @@ const InspectionDetails = ({ viewVehicleList }) => {
                     <div className="row mb-2">
                         <div className="col-12 col-lg-4">
                             <Form.Label>Inspection Type</Form.Label>
-                            <select value={formData.inspection_type} onChange={handleChange} name="inspection_type" id="inspection_type" className="form-select" aria-label="Default select example">
-                                <option value="select option">Select option</option>
-                                <option value="SGS">SGS</option>
-                                <option value="3rd Party">3rd Party</option>
-                                <option value="Shipper">Shipper</option>
-                                <option value="Consignee">Consignee</option>
-                                <option value="Self">Self</option>
-                                <option value="Agency">Agency</option>
-                            </select>
+                            <Select 
+                                name="inspection_type"
+                                options={[
+                                    { value: 'SGS', label: 'SGS' },
+                                    { value: '3rd Party', label: '3rd Party' },
+                                    { value: 'Shipper', label: 'Shipper' },
+                                    { value: 'Consignee', label: 'Consignee' },
+                                    { value: 'Self', label: 'Self' },
+                                    { value: 'Agency', label: 'Agency' },
+                                ]}
+                                onChange={(opt) => setFormData({ ...formData, inspection_type: opt.value })}
+                                value={formData.inspection_type ? { value: formData.inspection_type, label: formData.inspection_type } : { value: '', label: '' }}
+                            />
                         </div>
                         <div className="col-12 col-lg-4 column">
                             <Form.Label>Inspection Result</Form.Label>
@@ -152,7 +196,7 @@ const InspectionDetails = ({ viewVehicleList }) => {
                     }
                 </Form>
 
-                <div>
+                <div style={{ overflowX: "scroll",width: "100%" }}>
                     <table className="table table-striped">
                         <thead>
                             <tr>
@@ -176,7 +220,7 @@ const InspectionDetails = ({ viewVehicleList }) => {
                                         <button onClick={() => handleEdit(item)} className="btn btn-primary btn-sm p-2 my-2 gap-1" type="button">
                                             <FiEdit size={14} />Edit
                                         </button>
-                                        <button className="btn btn-danger btn-sm p-2 my-2 gap-1" type="button">
+                                        <button onClick={() => handleDelete(item.id)} className="btn btn-danger btn-sm p-2 my-2 gap-1" type="button">
                                             <FiTrash size={14} />Delete
                                         </button>
                                     </td>

@@ -41,7 +41,14 @@ const WeightRecipt = ({ viewVehicleList }) => {
                 showConfirmButton: false,
                 timer: 800
             });
-            setWeightReceipt(response.data);
+            setWeightReceipt(response.data?.vehicle_movement?.weigh_receipt);
+            setFormData({
+                ...formData,
+                vehicle_movement_id: viewVehicleList.id,
+                weigh_receipt_no: "",
+                weigh_receipt_date: "",
+                weigh_bridge: ""
+            });
         }
         else {
             alert(response.message);
@@ -73,8 +80,15 @@ const WeightRecipt = ({ viewVehicleList }) => {
                 showConfirmButton: false,
                 timer: 800
             });
-            setWeightReceipt(response.data);
+            setWeightReceipt(response.data?.vehicle_movement?.weigh_receipt);
             setFlag(false);
+            setFormData({
+                ...formData,
+                vehicle_movement_id: viewVehicleList.id,
+                weigh_receipt_no: "",
+                weigh_receipt_date: "",
+                weigh_bridge: ""
+            });
         }
         else {
             alert(response.message);
@@ -84,29 +98,18 @@ const WeightRecipt = ({ viewVehicleList }) => {
     // handel weight receipt delete
     const handleDelete = async (id) => {
         Swal.fire({
-            title: "Are you sure?",
+            title: 'Are you sure?',
             text: "You won't be able to revert this!",
-            icon: "warning",
+            icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: "#3085d6",
-            cancelButtonColor: "#d33",
-            confirmButtonText: "Yes, delete it!",
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
         }).then((result) => {
             if (result.isConfirmed) {
                 const response = deleteWeightReceipt(id);
-                console.log(response);
-                if (response.status === 200) {
-                    Swal.fire({
-                        title: "Weight receipt deleted successfully",
-                        icon: "success",
-                        showConfirmButton: false,
-                        timer: 800
-                    });
-                    setWeightReceipt(response.data);
-                }
-                else {
-                    alert(response.message);
-                }
+                setWeightReceipt(weightReceipt.filter(item => item.id !== id));
+                Swal.fire('Deleted!', 'weight receipt has been deleted.', 'success');
             }
         })
     }
@@ -149,7 +152,7 @@ const WeightRecipt = ({ viewVehicleList }) => {
                     }
                 </Form>
 
-                <div>
+                <div style={{ overflowX: "scroll",width: "100%" }}>
                     <table className="table table-striped">
                         <thead>
                             <tr>

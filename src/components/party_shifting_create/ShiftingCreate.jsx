@@ -48,7 +48,7 @@ const ShiftingCreate = () => {
         party_id: "",
         supplier_id: "",
         cargo_id: "",
-        movement_type: "party_shifting",
+        movement_type: ["party_shifting", "godown_shifting"]
     });
     // row per page state
     const [perPage, setPerPage] = React.useState(5);
@@ -353,9 +353,12 @@ const ShiftingCreate = () => {
                                                                                 <span className="badge bg-soft-primary text-primary me-2">
                                                                                     {item?.godown?.godown_name + " - " + item?.godown?.godown_no} {item.ref_movement?.godown?.godown_name + " - " + item.ref_movement?.godown?.godown_no}
                                                                                 </span>
-                                                                                <div>
-                                                                                    <span className="badge bg-soft-warning text-warning me-2">
-                                                                                        {item.movement_type + " - " + item.type}
+                                                                                <div className="d-flex">
+                                                                                    <span className="badge bg-soft-dark text-dark me-2">
+                                                                                        {item.movement_type}
+                                                                                    </span>
+                                                                                    <span className={`badge me-2 ${item.type === "load" ? "bg-soft-warning text-warning" : "bg-soft-primary text-primary"}`}>
+                                                                                        {item.type}
                                                                                     </span>
                                                                                 </div>
                                                                             </div>

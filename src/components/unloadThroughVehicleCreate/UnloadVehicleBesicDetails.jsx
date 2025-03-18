@@ -3,7 +3,7 @@ import AsyncSelect from "react-select/async";
 import Select from "react-select";
 import { party } from "@/api/Party";
 import { cargo } from "@/api/Cargo";
-import { FiEdit, FiList, FiPlus, FiTable } from "react-icons/fi";
+import { FiEdit, FiList, FiPlus, FiTable, FiTerminal, FiTruck } from "react-icons/fi";
 import { Form, Placeholder, Modal } from "react-bootstrap";
 import { getAllVehicleMovements } from "@/api/VehicleMovements";
 import { createUnloadVehicle } from "@/api/VehicleMovements";
@@ -25,7 +25,7 @@ const UnloadVehicleBesicDetails = () => {
         party_id: "",
         supplier_id: "",
         cargo_id: "",
-        movement_type: "",
+        movement_type: ["vehicle", "rail"],
     });
     const [isLoading, setIsLoading] = React.useState(false);
     // create a vehicle movement
@@ -72,7 +72,7 @@ const UnloadVehicleBesicDetails = () => {
     const filterPartyOption = async (inputValue) => {
         const response = await party(inputValue);
         const data = response.map((item) => {
-            return { value: item.id, label: item.legal_name };
+            return { value: item.id, label: item.trade_name };
         })
         return data;
     };
@@ -216,7 +216,7 @@ const UnloadVehicleBesicDetails = () => {
     ];
     const data = unloadVehicleList.map(item => ({
         vehicle_no: item.vehicle_no,
-        party_name: <Link to={`/unload_vehicle/view?id=${item.id}`} className="mb-0">{item.party?.legal_name + " - "}<span className="text-secondary">{item.supplier?.legal_name}</span></Link>,
+        party_name: <Link to={`/unload_vehicle/view?id=${item.id}`} className="mb-0">{item.party?.trade_name + " - "}<span className="text-secondary">{item.supplier?.trade_name}</span></Link>,
         godown_name: item.godown?.godown_name,
         movement_at: item.movement_at,
         supplier_name: item.supplier?.trade_name,
@@ -244,7 +244,9 @@ const UnloadVehicleBesicDetails = () => {
                                             defaultOptions
                                             loadOptions={partyOption}
                                             name="party_id"
-                                            onChange={(opt) => setFormData({ ...formData, party_id: opt.value })}
+                                            onChange={(opt) => setFormData({ ...formData, party_id: opt.value }
+                                                , setFilters({ ...filters, party_id: opt.value })
+                                            )}
                                         />
                                     </div>
                                     <div className="col-sm-12 col-lg-6">
@@ -254,7 +256,9 @@ const UnloadVehicleBesicDetails = () => {
                                             defaultOptions
                                             loadOptions={supplierOption}
                                             name="supplier_id"
-                                            onChange={(opt) => setFormData({ ...formData, supplier_id: opt.value })}
+                                            onChange={(opt) => setFormData({ ...formData, supplier_id: opt.value }
+                                                , setFilters({ ...filters, supplier_id: opt.value })
+                                            )}
                                         />
                                     </div>
                                 </div>
@@ -267,7 +271,9 @@ const UnloadVehicleBesicDetails = () => {
                                             defaultOptions
                                             loadOptions={cargoOption}
                                             name="cargo_id"
-                                            onChange={(opt) => setFormData({ ...formData, cargo_id: opt.value })}
+                                            onChange={(opt) => setFormData({ ...formData, cargo_id: opt.value }
+                                                , setFilters({ ...filters, cargo_id: opt.value })
+                                            )}
                                         />
                                     </div>
                                     <div className="col-sm-12 col-lg-6">
@@ -278,7 +284,9 @@ const UnloadVehicleBesicDetails = () => {
                                                 { value: 'vehicle', label: 'Vehicle' },
                                                 { value: "rail", label: "Rail" },
                                             ]}
-                                            onChange={(opt) => setFormData({ ...formData, movement_type: opt.value })}
+                                            onChange={(opt) => setFormData({ ...formData, movement_type: opt.value }
+                                                , setFilters({ ...filters, movement_type: opt.value })
+                                            )}
                                         />
                                     </div>
                                 </div>
@@ -321,14 +329,34 @@ const UnloadVehicleBesicDetails = () => {
                                             <>
                                                 {unloadVehicleList.map((item, index) => (
                                                     <li key={index} className="card-body px-3 pt-3 rounded-lg shadow-sm bg-white my-2 rounded">
-                                                        <div className="row ">
-                                                            <div className="col-sm-12 col-lg-6">
-                                                                <p className="mb-1">
-                                                                    <span className="badge bg-soft-warning text-warning me-2">{item.vehicle_no}</span>
-                                                                    <span className="badge bg-soft-primary text-primary me-2">{item?.godown?.godown_name + " - " + item?.godown?.godown_no}</span>
-                                                                </p>
+                                                        <div className="row justify-content-between">
+                                                            <div className="col-auto col-lg-6">
+                                                                {
+                                                                    item?.movement_type == "vehicle" ?
+                                                                        <p className="mb-1">
+                                                                            <span className="badge bg-soft-warning text-warning me-2">{item.vehicle_no}</span>
+                                                                            {
+                                                                                item?.godown_id == null ?
+                                                                                    <>  </>
+                                                                                    :
+                                                                                    <span className="badge bg-soft-primary text-primary me-2">{item?.godown?.godown_name + " - " + item?.godown?.godown_no}</span>
+
+                                                                            }
+                                                                            <span className="badge bg-soft-info text-info me-2"><FiTruck size={12} className="" /> {item.movement_type}</span>
+                                                                        </p>
+                                                                        :
+                                                                        <p className="mb-1">
+                                                                            {
+                                                                                item?.rr_number == null ?
+                                                                                    <>  </>
+                                                                                    :
+                                                                                    <span className="badge bg-soft-warning text-warning me-2">{item.rr_number + " - " + item.rr_date}</span>
+                                                                            }
+                                                                            <span className="badge bg-soft-info text-info me-2"><FiTruck size={12} className="" /> {item.movement_type}</span>
+                                                                        </p>
+                                                                }
                                                             </div>
-                                                            <div className="col-sm-12 col-lg-6">
+                                                            <div className="col-auto col-lg-6">
                                                                 <p className="mb-1 text-end">
                                                                     <span className="badge bg-soft-success text-success me-2">{item.movement_at?.split(" ")[0]}</span>
                                                                 </p>
@@ -337,32 +365,32 @@ const UnloadVehicleBesicDetails = () => {
                                                         </div>
                                                         <hr className="m-1" />
                                                         <div>
-                                                            <Link to={`/unload_vehicle/view?id=${item.id}`} className="mb-0">{item.party?.legal_name + " - "}<span className="text-secondary">{item.supplier?.legal_name}</span></Link>
+                                                            <Link to={`/unload_vehicle/view?id=${item.id}`} className="mb-0">{item.party?.trade_name + " - "}<span className="text-secondary">{item.supplier?.trade_name}</span></Link>
                                                             <p className="mb-0 text-muted">{item.cargo?.cargo_name}</p>
-                                                            <div className="row ">
+                                                            <div className="row">
+                                                                <strong>Bags</strong>
                                                                 {
                                                                     item.cargo_detail?.is_bulk === true ?
                                                                         <p className="mb-0">T : {item.cargo_detail?.total_weight}</p>
                                                                         :
                                                                         <>
-                                                                            <p className="mb-0 col-sm-12 col-lg-3"><span>Type : {item.cargo_detail?.bags_type}</span></p>
-                                                                            <p className="mb-0 col-sm-12 col-lg-3"><span>Q : {item.cargo_detail?.bags_qty}</span></p>
-                                                                            <p className="mb-0 col-sm-12 col-lg-3"><span>W : {item.cargo_detail?.bags_weight}</span></p>
-                                                                            <p className="mb-0 col-sm-12 col-lg-3"><span>T : {item.cargo_detail?.total_weight}</span></p>
+                                                                            <p className="mb-0 col-3 col-lg-3"><span>Type : {item.cargo_detail?.bags_type ?? "N/A"}</span></p>
+                                                                            <p className="mb-0 col-3 col-lg-3"><span>Q : {item.cargo_detail?.bags_qty ?? "N/A"}</span></p>
+                                                                            <p className="mb-0 col-3 col-lg-3"><span>W : {item.cargo_detail?.bags_weight ?? "N/A"}</span></p>
+                                                                            <p className="mb-0 col-3 col-lg-3"><span>T : {item.cargo_detail?.total_weight ?? "N/A"}</span></p>
                                                                         </>
                                                                 }
                                                             </div>
                                                         </div>
                                                         <hr className="m-1" />
                                                         <div className="row">
-                                                            <p className="col-lg-4 col-sm-12">N : {item.net_weight}</p>
-                                                            <p className="col-lg-4 col-sm-12">G : {item.gross_weight}</p>
-                                                            <p className="col-lg-4 col-sm-12">T : {item.tare_weight}</p>
+                                                            <p className="col-lg-4 col-4">N : {item.net_weight}</p>
+                                                            <p className="col-lg-4 col-4">G : {item.gross_weight}</p>
+                                                            <p className="col-lg-4 col-4">T : {item.tare_weight}</p>
                                                         </div>
                                                     </li>
                                                 ))}
                                                 <div className="d-flex justify-content-between align-items-center mt-3">
-                                                    {/* Rows Per Page Selector */}
                                                     <div className="d-flex align-items-center">
                                                         <label className="me-2">Rows per page:</label>
                                                         <select
@@ -374,7 +402,7 @@ const UnloadVehicleBesicDetails = () => {
                                                             }}
                                                             style={{ width: "80px" }}
                                                         >
-                                                            {[10, 15, 20, 25, 50, 100].map((size) => (
+                                                            {[5, 10, 15, 20, 25, 50, 100].map((size) => (
                                                                 <option key={size} value={size}>
                                                                     {size}
                                                                 </option>
@@ -402,6 +430,7 @@ const UnloadVehicleBesicDetails = () => {
                                                             breakClassName="page-item"
                                                             breakLinkClassName="page-link"
                                                             activeClassName="active"
+                                                            forcePage={page - 1}
                                                         />
                                                     </nav>
 
@@ -520,7 +549,7 @@ const UnloadVehicleBesicDetails = () => {
                                         <span className="text-danger">{errorHandler.driver_no ? errorHandler.driver_no : ""}</span>
                                     </div>
                                 </div>
-                                : 
+                                :
                                 <div>
                                     <div className="">
                                         <Form.Label>RR No</Form.Label>

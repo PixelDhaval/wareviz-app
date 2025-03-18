@@ -87,6 +87,7 @@ const BasicDetails = ({ viewVehicleList }) => {
                     isLoading ?
                         <>
                             <li className="card-body px-3 pt-3 rounded-lg shadow-sm bg-white my-2 rounded">
+                                <h5>{basicDetails.movement_type == "vehicle" ? "Unload Vehicle" : "Unload Rail"}</h5>
                                 <div className="row ">
                                     <p className="mb-1">
                                         <span className="badge bg-soft-success text-success me-2">{basicDetails.movement_at?.split(" ")[0]}</span>
