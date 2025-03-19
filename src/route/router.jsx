@@ -25,6 +25,8 @@ import PartyShiftingCreate from "../pages/party-shifting-create";
 import PartyShiftingView from "../pages/party-shifting-view";
 import LoadVehicleCreate from "../pages/load-vehicle-create";
 import LoadVehicleView from "../pages/load-vehicle-view";
+import VehicleMovementReport from "../pages/vehicleMovementReport";
+import ShiftingReport from "../pages/shifting-report";
 
 export const router = createBrowserRouter([
     {
@@ -98,6 +100,14 @@ export const router = createBrowserRouter([
             {
                 path: "/shifting/view",
                 element: <PartyShiftingView />
+            },
+            {
+                path: "/movement-report",
+                element: <VehicleMovementReport />
+            },
+            {
+                path: "/shifting-report",
+                element: <ShiftingReport />
             }
         ]
     },

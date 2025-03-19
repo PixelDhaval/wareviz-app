@@ -283,13 +283,15 @@ const LoadVehicleCreateForm = () => {
                                                 loadOptions={partyOption}
                                                 name="party_id"
                                                 value={formData.party_id ? { value: formData.party_id, label: formData.party_name } : null}
-                                                onChange={(opt) =>
+                                                isClearable={true}
+                                                onChange={(opt) =>{
                                                     setFormData({
                                                         ...formData,
-                                                        party_id: opt.value,
-                                                        party_name: opt.label, // Store the label for display
-                                                    }, setFilter({ ...filter, party_id: opt.value }))
-                                                }
+                                                        party_id: opt ? opt.value : "",
+                                                        party_name: opt ? opt.label : "", // Store the label for display
+                                                    })
+                                                    setFilter({ ...filter, party_id: opt ? opt.value : "" })
+                                                }}
                                             />
                                             <span className="text-danger">{errorHandler.party_id ? errorHandler.party_id : ""}</span>
                                         </div>
@@ -301,13 +303,15 @@ const LoadVehicleCreateForm = () => {
                                                 loadOptions={supplierOption}
                                                 name="supplier_id"
                                                 value={formData.supplier_id ? { value: formData.supplier_id, label: formData.supplier_name } : null}
-                                                onChange={(opt) =>
+                                                isClearable={true}
+                                                onChange={(opt) => {
                                                     setFormData({
                                                         ...formData,
-                                                        supplier_id: opt.value,
-                                                        supplier_name: opt.label,
-                                                    }, setFilter({ ...filter, supplier_id: opt.value }))
-                                                }
+                                                        supplier_id: opt ? opt.value : "",
+                                                        supplier_name: opt ? opt.label : "",
+                                                    })
+                                                    setFilter({ ...filter, supplier_id: opt ? opt.value : "" })
+                                                }}
                                             />
                                             <span className="text-danger">{errorHandler.supplier_id ? errorHandler.supplier_id : ""}</span>
                                         </div>
@@ -319,26 +323,32 @@ const LoadVehicleCreateForm = () => {
                                                 loadOptions={cargoOption}
                                                 name="cargo_id"
                                                 value={formData.cargo_id ? { value: formData.cargo_id, label: formData.cargo_name } : null}
-                                                onChange={(opt) =>
+                                                isClearable={true}
+                                                onChange={(opt) => {
                                                     setFormData({
                                                         ...formData,
-                                                        cargo_id: opt.value,
-                                                        cargo_name: opt.label,
-                                                    }, setFilter({ ...filter, cargo_id: opt.value }))
-                                                }
+                                                        cargo_id: opt ? opt.value : "",
+                                                        cargo_name: opt ? opt.label : "",
+                                                    })
+                                                    setFilter({ ...filter, cargo_id: opt ? opt.value : "" })
+                                                }}
                                             />
                                             <span className="text-danger">{errorHandler.cargo_id ? errorHandler.cargo_id : ""}</span>
                                         </div>
                                         <div className="col-12 col-lg-6 mb-2">
                                             <label htmlFor="">Movement Type</label>
                                             <Select
-                                                onChange={(selectOption) => setFormData({ ...formData, movement_type: selectOption.value }, setFilter({ ...filter, movement_type: selectOption.value }))}
                                                 name="movement_type"
+                                                isClearable={true}
                                                 options={[
                                                     { value: 'vehicle', label: 'Vehicle' },
                                                     { value: "rail", label: "Rail" },
                                                     { value: "shipment", label: "Shipment" },
                                                 ]}
+                                                onChange={(selectOption) => {
+                                                    setFormData({ ...formData, movement_type: selectOption ? selectOption.value : "" },
+                                                    setFilter({ ...filter, movement_type: selectOption ? selectOption.value : "" }))
+                                                }}
                                             />
                                             <span className="text-danger">{errorHandler.movement_type ? errorHandler.movement_type : ""}</span>
                                         </div>

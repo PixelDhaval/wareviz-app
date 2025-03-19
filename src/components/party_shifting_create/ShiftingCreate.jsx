@@ -256,10 +256,11 @@ const ShiftingCreate = () => {
                                             defaultOptions
                                             loadOptions={partyOption}
                                             name="party_id"
-                                            onChange={(opt) =>
-                                                setFormData({ ...formData, party_id: opt.value },
-                                                    setFilters({ ...filters, party_id: opt.value })
-                                                )}
+                                            isClearable={true}
+                                            onChange={(opt) => {
+                                                setFormData({ ...formData, party_id: opt ? opt.value : "" })
+                                                setFilters({ ...filters, party_id: opt ? opt.value : "" })
+                                            }}
                                         />
                                         <span className="text-danger">{errorHandler.party_id ? errorHandler.party_id : ""}</span>
                                     </div>
@@ -270,10 +271,11 @@ const ShiftingCreate = () => {
                                             defaultOptions
                                             loadOptions={supplierOption}
                                             name="supplier_id"
-                                            onChange={(opt) =>
-                                                setFormData({ ...formData, supplier_id: opt.value },
-                                                    setFilters({ ...filters, supplier_id: opt.value })
-                                                )}
+                                            isClearable={true}
+                                            onChange={(opt) => {
+                                                setFormData({ ...formData, supplier_id: opt ? opt.value : "" })
+                                                setFilters({ ...filters, supplier_id: opt ? opt.value : "" })
+                                            }}
                                         />
                                         <span className="text-danger">{errorHandler.supplier_id ? errorHandler.supplier_id : ""}</span>
                                     </div>
@@ -287,10 +289,11 @@ const ShiftingCreate = () => {
                                             defaultOptions
                                             loadOptions={cargoOption}
                                             name="cargo_id"
-                                            onChange={(opt) =>
-                                                setFormData({ ...formData, cargo_id: opt.value },
-                                                    setFilters({ ...filters, cargo_id: opt.value })
-                                                )}
+                                            isClearable={true}
+                                            onChange={(opt) => {
+                                                setFormData({ ...formData, cargo_id: opt ? opt.value : "" })
+                                                setFilters({ ...filters, cargo_id: opt ? opt.value : "" })
+                                            }}
                                         />
                                         <span className="text-danger">{errorHandler.cargo_id ? errorHandler.cargo_id : ""}</span>
                                     </div>
@@ -302,16 +305,15 @@ const ShiftingCreate = () => {
                                                 { value: 'party_shifting', label: 'Party Shifting' },
                                                 { value: "godown_shifting", label: "Godown Shifting" },
                                             ]}
-                                            onChange={(opt) =>
+                                            isClearable={true}
+                                            onChange={(opt) => {
                                                 setFormData({
-                                                    ...formData,
-                                                    movement_type: opt.value // Ensure opt.value is a string
-                                                },
-                                                    setFilters({
-                                                        ...filters,
-                                                        movement_type: opt.value
-                                                    }))
-                                            }
+                                                    ...formData, movement_type: opt ? opt.value : ""
+                                                })
+                                                setFilters({
+                                                    ...filters, movement_type: opt ? opt.value : ""
+                                                })
+                                            }}
                                         />
                                         <span className="text-danger">{errorHandler.movement_type ? errorHandler.movement_type : ""}</span>
                                     </div>

@@ -1,5 +1,3 @@
-import { FaTruckLoading } from "react-icons/fa";
-
 export const menuList = [
     {
         id: 0,
@@ -51,6 +49,26 @@ export const menuList = [
         path: "/shifting/create",
         icon: "feather-clock",
         dropdownMenu: []
+    },
+    {
+        id: 4,
+        name: "Movement Report",
+        path: "#",
+        icon: "file-text",
+        dropdownMenu: [
+            {
+                id: 1,
+                name: "Movement Report",
+                path: "/movement-report",
+                subdropdownMenu: false
+            },
+            {
+                id: 2,
+                name: "Shifting Report",
+                path: "/shifting-report",
+                subdropdownMenu: false
+            }
+        ]
     },
     {
         id: 10,

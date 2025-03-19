@@ -3,16 +3,15 @@ import { Form } from "react-bootstrap";
 import { getAllVehicleMovements } from "@/api/VehicleMovements";
 import DataTable from "react-data-table-component";
 import { Link } from "react-router-dom";
+import Select from "react-select";
 import AsyncSelect from "react-select/async";
 import { party } from "@/api/Party";
 import { cargo } from "@/api/Cargo";
-import { godown } from "@/api/Godown";
-import Export from "react-data-table-component";
-import Select from "react-select";
 import * as XLSX from "xlsx";
+import { godown } from "@/api/Godown";
 import { FiX } from "react-icons/fi";
 
-const MovementReportTable = () => {
+const ShiftingReportTable = () => {
     const [paginate, setPaginate] = React.useState(false);
     const [filters, SetFilters] = React.useState({
         movement_at: "",
@@ -20,9 +19,11 @@ const MovementReportTable = () => {
         supplier_id: "",
         cargo_id: "",
         godown_id: "",
-        type: "",
+        movement_type: "",
+        type: "load"
     });
     const [filterValue, setFilterValue] = useState({ field: "", value: "" });
+
     // dataTable state
     const [tableData, setTableData] = React.useState([]);
 
@@ -121,118 +122,159 @@ const MovementReportTable = () => {
     }, [filters, paginate]);
 
     // Calculate totals
-    const totalVehicle = tableData.length;
-    const totalGrossWeight = tableData.reduce((sum, item) => sum + (item.gross_weight ?? 0), 0);
+    const total = tableData.length;
     const totalNetWeight = tableData.reduce((sum, item) => sum + (item.net_weight ?? 0), 0);
     const totalPPBags = tableData.reduce((sum, item) => sum + (item.cargo_detail?.bags_type === "pp" ? item.cargo_detail?.bags_qty : 0), 0);
     const totalJuteBags = tableData.reduce((sum, item) => sum + (item.cargo_detail?.bags_type === "jute" ? item.cargo_detail?.bags_qty : 0), 0);
     const totalWeight = tableData.reduce((sum, item) => sum + (item.cargo_detail?.total_weight ?? 0), 0);
 
-    // Table columns
-    const columns = [
-        { name: "Vehicle No", selector: row => row.vehicle_no, sortable: true },
+    // Table columns for godown view
+    const godownTableColumns = [
         { name: "Party Name", selector: row => row.party_name, sortable: true },
-        { name: "Godown Name", selector: row => row.godown_name, sortable: true },
         { name: "Supplier Name", selector: row => row.supplier_name, sortable: true },
         { name: "Cargo Name", selector: row => row.cargo_name, sortable: true },
-        { name: "Type", selector: row => row.movement_type, sortable: true },
-        { name: "Movement At", selector: row => row.movement_at, sortable: true },
+        { name: "Form Godown", selector: row => row.form_godown, sortable: true },
+        { name: "To Godown", selector: row => row.to_godown, sortable: true },
         { name: "Net Weight", selector: row => row.net_weight, sortable: true },
-        { name: "Gross Weight", selector: row => row.gross_weight, sortable: true },
         { name: "PP Bags", selector: row => row.pp_bags, sortable: true },
         { name: "Jute Bags", selector: row => row.jute_bags, sortable: true },
         { name: "Total Weight", selector: row => row.total_weight, sortable: true },
     ];
 
     // Process table data and add summary row
-    const data = [
+    const godownTableData = [
         ...tableData.map(item => ({
-            vehicle_no: item.vehicle_no,
             party_name: item.party?.trade_name,
-            godown_name: item.godown?.godown_name,
             supplier_name: item.supplier?.trade_name,
             cargo_name: item.cargo?.cargo_name,
-            movement_type: <>
-                {
-                    item.type === "load" ?
-                        <span className="badge bg-soft-warning text-warning me-2">{item.type}</span>
-                        :
-                        <span className="badge bg-soft-primary text-primary me-2">{item.type}</span>
-                }
-            </>,
-            movement_at: item.movement_at,
+            form_godown: item.godown?.godown_name,
+            to_godown: item.ref_movement?.godown?.godown_name,
             net_weight: item.net_weight ?? 0,
-            gross_weight: item.gross_weight ?? 0,
             pp_bags: item.cargo_detail?.bags_type === "pp" ? item.cargo_detail?.bags_qty : 0,
             jute_bags: item.cargo_detail?.bags_type === "jute" ? item.cargo_detail?.bags_qty : 0,
             total_weight: item.cargo_detail?.total_weight ?? 0,
         })),
-        // Add footer row
         {
-            vehicle_no: "Total : " + totalVehicle,
-            party_name: "",
-            godown_name: "",
+            party_name: "Total : " + total,
             supplier_name: "",
             cargo_name: "",
-            movement_type: "",
-            movement_at: "",
+            form_godown: "",
+            to_godown: "",
             net_weight: <strong>{totalNetWeight}</strong>,
-            gross_weight: <strong>{totalGrossWeight}</strong>,
             pp_bags: <strong>{totalPPBags}</strong>,
             jute_bags: <strong>{totalJuteBags}</strong>,
             total_weight: <strong>{totalWeight}</strong>,
         }
     ];
 
-    // Download excel file of table 
+    // Table columns for party view
+    const partyTableColumns = [
+        { name: "Form Party", selector: row => row.form_party, sortable: true },
+        { name: "To Party", selector: row => row.to_party, sortable: true },
+        { name: "Supplier Name", selector: row => row.supplier_name, sortable: true },
+        { name: "Cargo Name", selector: row => row.cargo_name, sortable: true },
+        { name: "Godown Name", selector: row => row.godown_name, sortable: true },
+        { name: "Net Weight", selector: row => row.net_weight, sortable: true },
+        { name: "PP Bags", selector: row => row.pp_bags, sortable: true },
+        { name: "Jute Bags", selector: row => row.jute_bags, sortable: true },
+        { name: "Total Weight", selector: row => row.total_weight, sortable: true },
+    ];
+
+    // Process table data and add summary row
+    const partyTableData = [
+        ...tableData.map(item => ({
+            form_party: item.party?.trade_name,
+            to_party: item.ref_movement?.party?.trade_name,
+            supplier_name: item.supplier?.trade_name,
+            cargo_name: item.cargo?.cargo_name,
+            form_godown: item.godown?.godown_name,
+            to_godown: item.ref_movement?.godown?.godown_name,
+            net_weight: item.net_weight ?? 0,
+            pp_bags: item.cargo_detail?.bags_type === "pp" ? item.cargo_detail?.bags_qty : 0,
+            jute_bags: item.cargo_detail?.bags_type === "jute" ? item.cargo_detail?.bags_qty : 0,
+            total_weight: item.cargo_detail?.total_weight ?? 0,
+        })),
+        {
+            form_party: "Total : " + total,
+            to_party: "",
+            supplier_name: "",
+            cargo_name: "",
+            form_godown: "",
+            to_godown: "",
+            net_weight: <strong>{totalNetWeight}</strong>,
+            pp_bags: <strong>{totalPPBags}</strong>,
+            jute_bags: <strong>{totalJuteBags}</strong>,
+            total_weight: <strong>{totalWeight}</strong>,
+        }
+    ];
+
+    // download excel file of table
     const downloadExcel = () => {
         if (!tableData || tableData.length === 0) {
             console.error("No data available to export!");
             return;
         }
 
-        // Format data for Excel
-        const formattedData = tableData.map(item => ({
-            "Vehicle No": item.vehicle_no,
-            "Party Name": item.party?.trade_name,
-            "Godown Name": item.godown?.godown_name,
-            "Supplier Name": item.supplier?.trade_name,
-            "Cargo Name": item.cargo?.cargo_name,
-            "Movement Type": item.type,
-            "Movement At": item.movement_at,
-            "Net Weight": item.net_weight ?? 0,
-            "Gross Weight": item.gross_weight ?? 0,
-            "PP Bags": item.cargo_detail?.bags_type === "pp" ? item.cargo_detail?.bags_qty : 0,
-            "Jute Bags": item.cargo_detail?.bags_type === "jute" ? item.cargo_detail?.bags_qty : 0,
-            "Total Weight": item.cargo_detail?.total_weight ?? 0,
-        }));
+        let formattedData = [];
+        let totalRow = {};
 
-        formattedData.push({
-            "Vehicle No": `Total: ${totalVehicle}`,
-            "Party Name": "",
-            "Godown Name": "",
-            "Supplier Name": "",
-            "Cargo Name": "",
-            "Movement Type": "",
-            "Movement At": "",
-            "Net Weight": totalNetWeight,
-            "Gross Weight": totalGrossWeight,
-            "PP Bags": totalPPBags,
-            "Jute Bags": totalJuteBags,
-            "Total Weight": totalWeight,
-        });
-
-        // Create worksheet and workbook
+        if (filters.movement_type === "godown_shifting") {
+            formattedData = tableData.map(item => ({
+                "Party Name": item.party?.trade_name,
+                "Supplier Name": item.supplier?.trade_name,
+                "Cargo Name": item.cargo?.cargo_name,
+                "From Godown": item.godown?.godown_name,
+                "To Godown": item.ref_movement?.godown?.godown_name,
+                "Net Weight": item.net_weight ?? 0,
+                "PP Bags": item.cargo_detail?.bags_type === "pp" ? item.cargo_detail?.bags_qty : 0,
+                "Jute Bags": item.cargo_detail?.bags_type === "jute" ? item.cargo_detail?.bags_qty : 0,
+                "Total Weight": item.cargo_detail?.total_weight ?? 0,
+            }));
+            totalRow = {
+                "Party Name": `Total Rows: ${total}`,
+                "Supplier Name": "",
+                "Cargo Name": "",
+                "From Godown": "",
+                "To Godown": "",
+                "Net Weight": totalNetWeight,
+                "PP Bags": totalPPBags,
+                "Jute Bags": totalJuteBags,
+                "Total Weight": totalWeight,
+            };
+        }
+        else if (filters.movement_type === "party_shifting") {
+            formattedData = tableData.map(item => ({
+                "From Party": item.party?.trade_name,
+                "To Party": item.ref_movement?.party?.trade_name,
+                "Supplier Name": item.supplier?.trade_name,
+                "Cargo Name": item.cargo?.cargo_name,
+                "Godown Name": item.godown?.godown_name,
+                "Net Weight": item.net_weight ?? 0,
+                "PP Bags": item.cargo_detail?.bags_type === "pp" ? item.cargo_detail?.bags_qty : 0,
+                "Jute Bags": item.cargo_detail?.bags_type === "jute" ? item.cargo_detail?.bags_qty : 0,
+                "Total Weight": item.cargo_detail?.total_weight ?? 0,
+            }));
+            totalRow = {
+                "From Party": `Total Rows: ${total}`,
+                "To Party": "",
+                "Supplier Name": "",
+                "Cargo Name": "",
+                "Godown Name": "",
+                "Net Weight": totalNetWeight,
+                "PP Bags": totalPPBags,
+                "Jute Bags": totalJuteBags,
+                "Total Weight": totalWeight,
+            };
+        }
+        formattedData.push(totalRow);
         const ws = XLSX.utils.json_to_sheet(formattedData);
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Movement Report");
-
-        // Save the file
-        XLSX.writeFile(wb, "Movement_Report.xlsx");
+        XLSX.utils.book_append_sheet(wb, ws, "Shifting Report");
+        XLSX.writeFile(wb, `Shifting_Report_${filters.movement_type}.xlsx`);
     };
 
+    // filter option state 
     const filterOption = [
-        { value: "movement_type", label: "Movement Type" },
         { value: "party_id", label: "Party Name" },
         { value: "supplier_id", label: "Supplier Name" },
         { value: "cargo_id", label: "Cargo Name" },
@@ -255,21 +297,34 @@ const MovementReportTable = () => {
 
     return (
         <div className="card-body">
-            <Form onSubmit={handleSubmit}>
-                <div className="">
-                    <Form.Label>Select Date</Form.Label>
-                    <Form.Control
-                        onChange={(e) => SetFilters({ ...filters, movement_at: e.target.value })}
-                        type="date"
-                        name="movement_at"
-                        placeholder="Enter movement at"
-                    />
+            <Form onSubmit={(e) => e.preventDefault()}>
+                <div className="row">
+                    <div className="col-sm-12 col-lg-6">
+                        <Form.Label>Select Date</Form.Label>
+                        <Form.Control
+                            onChange={(e) => SetFilters({ ...filters, movement_at: e.target.value })}
+                            type="date"
+                            name="movement_at"
+                            placeholder="Enter movement at"
+                        />
+                    </div>
+                    <div className="col-sm-12 col-lg-6">
+                        <Form.Label>Select Type</Form.Label>
+                        <Select
+                            name="movement_type"
+                            options={[
+                                { value: "party_shifting", label: "Party Shifting" },
+                                { value: "godown_shifting", label: "Godown Shifting" },
+                            ]}
+                            onChange={(selectOption) => SetFilters({ ...filters, movement_type: selectOption.value })}
+                        />
+                    </div>
                 </div>
             </Form>
 
             {filters.movement_at !== '' && (
                 <>
-                    <Form>
+                    <Form onSubmit={handleSubmit}>
                         <div className="row my-2 align-items-end">
                             <div className="col-sm-12 col-lg-6">
                                 <Form.Label>Select Field</Form.Label>
@@ -348,26 +403,9 @@ const MovementReportTable = () => {
                                     </>
                                 )
                             }
-                            {
-                                filterValue.field === "movement_type" && (
-                                    <>
-                                        <div className="col-sm-12 col-lg-6">
-                                            <Form.Label>Type</Form.Label>
-                                            <Select
-                                                name="type"
-                                                options={[
-                                                    { value: "", label: "All" },
-                                                    { value: "load", label: "Load" },
-                                                    { value: "unload", label: "Unload" },
-                                                ]}
-                                                onChange={(selectOption) => SetFilters({ ...filters, type: selectOption.value })}
-                                            />
-                                        </div>
-                                    </>
-                                )
-                            }
                         </div>
                     </Form>
+
                     <div>
                         {Object.entries(filters).map(([key, value], index) => {
                             if (value === "" || key === "movement_at") return null; // Exclude empty values & movement_at
@@ -380,19 +418,36 @@ const MovementReportTable = () => {
                         })}
                     </div>
 
-                    <DataTable
-                        columns={columns}
-                        data={data}
-                        actions={
-                            <button className="btn btn-success" onClick={downloadExcel}>
-                                Export to Excel
-                            </button>
-                        }
-                    />
+                    {
+                        filters.movement_type == "godown_shifting" ?
+                            <DataTable
+                                columns={godownTableColumns}
+                                data={godownTableData}
+                                highlightOnHover
+                                striped
+                                actions={
+                                    <button className="btn btn-success" onClick={downloadExcel}>
+                                        Export to Excel
+                                    </button>
+                                }
+                            />
+                            :
+                            <DataTable
+                                columns={partyTableColumns}
+                                data={partyTableData}
+                                highlightOnHover
+                                striped
+                                actions={
+                                    <button className="btn btn-success" onClick={downloadExcel}>
+                                        Export to Excel
+                                    </button>
+                                }
+                            />
+                    }
                 </>
             )}
         </div>
     );
 };
 
-export default MovementReportTable;
+export default ShiftingReportTable;

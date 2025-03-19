@@ -5,6 +5,8 @@ import { FiActivity, FiAirplay, FiAlertCircle, FiArchive, FiArrowDown, FiArrowUp
 
 const getIcon = (name) => {
     switch (name) {
+        case "file-text":
+            return <FiFileText />
         case "feather-inbox":
             return <FiInbox />
         case "feather-truck":

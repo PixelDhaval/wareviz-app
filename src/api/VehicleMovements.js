@@ -1,7 +1,8 @@
 import AxiosInstance from "./AxiosInstance";
 
-export const getAllVehicleMovements = async (filter, perPage, page, pageSize) => {
+export const getAllVehicleMovements = async (filter, perPage, page, pageSize,paginate) => {
     let data = {
+        paginate,
         sortBy: "movement_at",
         order: "desc",
         page: page,
