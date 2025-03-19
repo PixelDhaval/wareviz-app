@@ -5,6 +5,7 @@ import { updateVehicle } from "@/api/VehicleMovements";
 import Swal from "sweetalert2";
 import AsyncSelect from "react-select/async";
 import { godown } from "@/api/Godown";
+import Select from "react-select";
 
 const BasicTab = ({ loadingDetails }) => {
     // list state state 
@@ -30,7 +31,15 @@ const BasicTab = ({ loadingDetails }) => {
         tare_weight: "",
         rr_date: "",
         rr_number: "",
-        godown_id: ""
+        godown_id: "",
+        godown_name: "",
+        vessel_name: "",
+        vessel_date: "",
+        loading_port: "",
+        loading_country: "",
+        shipment_type: "",
+        container_type: "",
+        container_no: "",
     });
 
     // Fetch data from API
@@ -73,6 +82,8 @@ const BasicTab = ({ loadingDetails }) => {
     const handleEdit = (e) => {
         setFormData({
             ...formData,
+            godown_id: basicDetails.godown_id,
+            godown_name: basicDetails.godown?.godown_name,
             vehicle_no: basicDetails.vehicle_no,
             driver_name: basicDetails.driver_name,
             driver_no: basicDetails.driver_no,
@@ -81,7 +92,14 @@ const BasicTab = ({ loadingDetails }) => {
             gross_weight: basicDetails.gross_weight,
             tare_weight: basicDetails.tare_weight,
             rr_number: basicDetails.rr_number,
-            rr_date: basicDetails.rr_date
+            rr_date: basicDetails.rr_date,
+            vessel_name: basicDetails.vessel_name,
+            vessel_date: basicDetails.vessel_date,
+            loading_port: basicDetails.loading_port,
+            loading_country: basicDetails.loading_country,
+            shipment_type: basicDetails.shipment_type,
+            container_type: basicDetails.container_type,
+            container_no: basicDetails.container_no,
         })
         setShowModel(true);
     }
@@ -121,6 +139,18 @@ const BasicTab = ({ loadingDetails }) => {
                                 <div>
                                     <h6 className="mb-0">{basicDetails.party?.trade_name + " - "}<span className="text-secondary">{basicDetails.supplier?.trade_name}</span></h6>
                                     <p className="mb-0 text-muted">{basicDetails.cargo?.cargo_name}</p>
+                                    <div>
+                                        {
+                                            basicDetails?.godown_id != null ?
+                                                <>
+                                                    <strong>Godown : </strong><span className="badge bg-soft-info text-info me-2">{basicDetails?.godown?.godown_name + " - " + basicDetails?.godown?.godown_no}</span>
+                                                </>
+                                                : 
+                                                <>
+                                                    <strong>Godown : </strong><span className="badge bg-soft-danger text-danger me-2">Pandding</span>
+                                                </>
+                                        }
+                                    </div>
                                     <hr className="m-1" />
                                     {basicDetails?.movement_type === "vehicle" ? (
                                         <div className="row">
@@ -130,20 +160,64 @@ const BasicTab = ({ loadingDetails }) => {
                                             <p className="col-12 col-lg-4">LIC : {basicDetails?.driver_lic_no}</p>
                                         </div>
                                     ) : (
-                                        <div className="row">
-                                            <p className="col-12 col-lg-4">RR No : {basicDetails?.rr_number}</p>
-                                            <p className="col-12 col-lg-4">RR Date : {basicDetails?.rr_date}</p>
-                                        </div>
+                                        basicDetails?.movement_type === "rail" ? (
+                                            <div className="row">
+                                                <p className="col-12 col-lg-4">RR No : {basicDetails?.rr_number}</p>
+                                                <p className="col-12 col-lg-4">RR Date : {basicDetails?.rr_date}</p>
+                                            </div>
+                                        ) : ((
+                                            <div className="row">
+                                                <p className="col-auto col-lg-4 mb-0">Vessel :
+                                                    {
+                                                        basicDetails?.vessel_name != null ?
+                                                            <>
+                                                                <span className="badge bg-soft-dark text-dark me-2"> {basicDetails?.vessel_name + " - " + basicDetails?.vessel_date}</span>
+                                                            </>
+                                                            :
+                                                            <span className="badge bg-soft-danger text-danger me-2"> Pandding</span>
+                                                    }
+                                                </p>
+                                                {
+                                                    basicDetails?.loading_port != null && basicDetails?.loading_country != null ?
+                                                        <>
+                                                            <p className="col-auto col-lg-4 mb-0 text-uppercase">LOP : <strong>{basicDetails?.loading_port}</strong></p>
+                                                            <p className="col-auto col-lg-4 mb-0">Loading Country : <strong className="text-uppercase">{basicDetails?.loading_country}</strong></p>
+                                                        </>
+                                                        :
+                                                        <>
+                                                            <p className="col-auto col-lg-4 mb-0 text-uppercase">LOP : <span className="badge bg-soft-danger text-danger me-2"> Pandding</span></p>
+                                                            <p className="col-auto col-lg-4 mb-0">Loading Country : <span className="badge bg-soft-danger text-danger me-2"> Pandding</span></p>
+                                                        </>
+                                                }
+                                            </div>
+                                        )
+                                        )
                                     )}
 
                                 </div>
                                 <hr className="m-1" />
                                 <div className="">
                                     {basicDetails?.movement_type === "vehicle" ? (
-                                        <p>N : {basicDetails?.net_weight} | G : {basicDetails?.gross_weight} | T : {basicDetails?.tare_weight}</p>
+                                        <p className="mb-0">N : {basicDetails?.net_weight} | G : {basicDetails?.gross_weight} | T : {basicDetails?.tare_weight}</p>
                                     ) : (
-                                        <p>G : {basicDetails?.gross_weight}</p>
+                                        basicDetails?.movement_type === "rail" ? (
+                                            <p>G : {basicDetails?.gross_weight}</p>
+                                        ) : (
+                                            <>
+                                                <strong>Shipment</strong>
+                                                {
+                                                    basicDetails?.shipment_type != null && basicDetails?.container_type != null ?
+                                                        <p className="col-auto col-lg-4 mb-0">Shipment : <span className="badge bg-soft-warning text-warning">{basicDetails?.shipment_type + " - " + basicDetails?.container_no + " x " + basicDetails?.container_type + "'"}</span></p>
+                                                        : 
+                                                        <p className="col-auto col-lg-4 mb-0">Shipment : <span className="badge bg-soft-danger text-danger">Pandding</span></p>
+                                                }
+                                            </>
+                                        )
                                     )}
+                                </div>
+                                <hr className="m-1" />
+                                <div>
+                                    <p className="mb-0">N : {basicDetails?.net_weight}KG</p>
                                 </div>
                                 <button className="btn btn-primary btn-sm p-2 my-2 gap-1" type="button" onClick={handleEdit}>
                                     <FiEdit size={14} />Edit
@@ -203,6 +277,7 @@ const BasicTab = ({ loadingDetails }) => {
                                             setErrorHandler({ ...errorHandler, godown_id: opt.value })
                                         )
                                     }
+                                    value={formData.godown_id ? { value: formData.godown_id, label: formData.godown_name } : null}
                                 />
                             </div>
                             {
@@ -245,23 +320,83 @@ const BasicTab = ({ loadingDetails }) => {
                                         </div>
                                     </>
                                     :
-                                    <>
-                                        <div className="">
-                                            <Form.Label>RR No</Form.Label>
-                                            <Form.Control onChange={handleChange} value={formData.rr_number} type="text" name="rr_number" placeholder="Enter RR no" />
-                                            <span className="text-danger">{errorHandler.rr_number ? errorHandler.rr_number : ""}</span>
-                                        </div>
-                                        <div className="">
-                                            <Form.Label>RR Date</Form.Label>
-                                            <Form.Control onChange={handleChange} value={formData.rr_date} type="date" name="rr_date" placeholder="Enter RR date" />
-                                            <span className="text-danger">{errorHandler.rr_date ? errorHandler.rr_date : ""}</span>
-                                        </div>
-                                        <div className="">
-                                            <Form.Label>Gross Weight</Form.Label>
-                                            <Form.Control onChange={handleChange} value={formData.gross_weight} type="text" name="gross_weight" placeholder="Enter gross weight" />
-                                            <span className="text-danger">{errorHandler.gross_weight ? errorHandler.gross_weight : ""}</span>
-                                        </div>
-                                    </>
+                                    (basicDetails?.movement_type === "rail" ? (
+                                        <>
+                                            <div className="">
+                                                <Form.Label>RR No</Form.Label>
+                                                <Form.Control onChange={handleChange} value={formData.rr_number} type="text" name="rr_number" placeholder="Enter RR no" />
+                                                <span className="text-danger">{errorHandler.rr_number ? errorHandler.rr_number : ""}</span>
+                                            </div>
+                                            <div className="">
+                                                <Form.Label>RR Date</Form.Label>
+                                                <Form.Control onChange={handleChange} value={formData.rr_date} type="date" name="rr_date" placeholder="Enter RR date" />
+                                                <span className="text-danger">{errorHandler.rr_date ? errorHandler.rr_date : ""}</span>
+                                            </div>
+                                            <div className="">
+                                                <Form.Label>Gross Weight</Form.Label>
+                                                <Form.Control onChange={handleChange} value={formData.gross_weight} type="text" name="gross_weight" placeholder="Enter gross weight" />
+                                                <span className="text-danger">{errorHandler.gross_weight ? errorHandler.gross_weight : ""}</span>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div className="">
+                                                <Form.Label>Vessel Name</Form.Label>
+                                                <Form.Control onChange={handleChange} value={formData.vessel_name} type="text" name="vessel_name" placeholder="Enter vessel name" />
+                                                <span className="text-danger">{errorHandler.vessel_name ? errorHandler.vessel_name : ""}</span>
+                                            </div>
+                                            <div className="">
+                                                <Form.Label>Vessel Date</Form.Label>
+                                                <Form.Control onChange={handleChange} value={formData.vessel_date} type="date" name="vessel_date" placeholder="Enter vessel date" />
+                                                <span className="text-danger">{errorHandler.vessel_date ? errorHandler.vessel_date : ""}</span>
+                                            </div>
+                                            <div className="">
+                                                <Form.Label>Loading Port</Form.Label>
+                                                <Form.Control onChange={handleChange} value={formData.loading_port} type="text" name="loading_port" placeholder="Enter loading port" />
+                                                <span className="text-danger">{errorHandler.loading_port ? errorHandler.loading_port : ""}</span>
+                                            </div>
+                                            <div className="">
+                                                <Form.Label>Loading Country</Form.Label>
+                                                <Form.Control onChange={handleChange} value={formData.loading_country} type="text" name="loading_country" placeholder="Enter loading country" />
+                                                <span className="text-danger">{errorHandler.loading_country ? errorHandler.loading_country : ""}</span>
+                                            </div>
+                                            <div className="">
+                                                <Form.Label>Shipment Type</Form.Label>
+                                                <Select
+                                                    options={[
+                                                        { value: "container-bulk", label: "Container Bulk" },
+                                                        { value: "container-bags", label: "Container Bags" },
+                                                        { value: "bulk", label: "Bulk" },
+                                                    ]}
+                                                    onChange={(selectOption) => setFormData({ ...formData, shipment_type: selectOption.value })}
+                                                    value={formData.shipment_type ? { value: formData.shipment_type, label: formData.shipment_type } : null}
+                                                />
+                                                <span className="text-danger">{errorHandler.shipment_type ? errorHandler.shipment_type : ""}</span>
+                                            </div>
+                                            <div className="">
+                                                <Form.Label>Container Type</Form.Label>
+                                                <Select
+                                                    options={[
+                                                        { value: "20", label: "20" },
+                                                        { value: "40", label: "40" },
+                                                        { value: "40hc", label: "40 HC" },
+                                                    ]}
+                                                    onChange={(selectOption) => setFormData({ ...formData, container_type: selectOption.value })}
+                                                    value={formData.container_type ? { value: formData.container_type, label: formData.container_type } : null}
+                                                />
+                                            </div>
+                                            <div className="">
+                                                <Form.Label>Container No</Form.Label>
+                                                <Form.Control onChange={handleChange} value={formData.container_no} type="text" name="container_no" placeholder="Enter container no" />
+                                                <span className="text-danger">{errorHandler.container_no ? errorHandler.container_no : ""}</span>
+                                            </div>
+                                            <div className="">
+                                                <Form.Label>Net Weight</Form.Label>
+                                                <Form.Control onChange={handleChange} value={formData.net_weight} type="text" name="net_weight" placeholder="Enter net weight" />
+                                                <span className="text-danger">{errorHandler.net_weight ? errorHandler.net_weight : ""}</span>
+                                            </div>
+                                        </>
+                                    ))
                             }
 
                         </div>

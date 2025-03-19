@@ -8,9 +8,11 @@ import { party } from "@/api/Party";
 import { getAllVehicleMovements, createUnloadVehicle } from "@/api/VehicleMovements";
 import { Link, useNavigate } from "react-router-dom";
 import { MdDirectionsRailway } from "react-icons/md";
+import { RiShipLine } from "react-icons/ri";
 import ReactPaginate from "react-paginate";
 import DataTable from "react-data-table-component";
 import Swal from "sweetalert2";
+import { godown } from "@/api/Godown";
 
 const LoadVehicleCreateForm = () => {
     //  useNavigate hook
@@ -142,6 +144,10 @@ const LoadVehicleCreateForm = () => {
         driver_no: "",
         rr_number: "",
         rr_date: "",
+        vessel_name: "",
+        vessel_date: "",
+        loading_port: "",
+        loading_country: "",
         shipment_type: "",
         container_type: "",
         container_no: "",
@@ -242,7 +248,6 @@ const LoadVehicleCreateForm = () => {
 
     const handelModalSubmit = async (e) => {
         e.preventDefault();
-
         const response = await createUnloadVehicle(formData);
         console.log(response);
         if (response.status === 200) {
@@ -382,7 +387,7 @@ const LoadVehicleCreateForm = () => {
                                                                         {
                                                                             item?.movement_type == "vehicle" ?
                                                                                 <p className="mb-1">
-                                                                                    <span className="badge bg-soft-info text-info me-2"><FiTruck size={12} className="" /> {item.movement_type}</span>
+                                                                                    <span className="badge bg-soft-dark text-dark me-2"><FiTruck size={12} className="" /> {item.movement_type}</span>
                                                                                     <span className="badge bg-soft-warning text-warning me-2">{item.vehicle_no}</span>
                                                                                     {
                                                                                         item?.godown_id == null ?
@@ -394,16 +399,32 @@ const LoadVehicleCreateForm = () => {
 
                                                                                 </p>
                                                                                 :
-                                                                                <p className="mb-1">
-                                                                                    <span className="badge bg-soft-primary text-primary me-2"><MdDirectionsRailway size={12} className="" /> {item.movement_type}</span>
-                                                                                    {
-                                                                                        item?.rr_number == null ?
-                                                                                            <>  </>
-                                                                                            :
-                                                                                            <span className="badge bg-soft-warning text-warning me-2">{item.rr_number + " - " + item.rr_date}</span>
-                                                                                    }
+                                                                                (
+                                                                                    item?.movement_type === "rail" ?
+                                                                                        <p className="mb-1">
+                                                                                            <span className="badge bg-soft-primary text-primary me-2"><MdDirectionsRailway size={12} className="" /> {item.movement_type}</span>
+                                                                                            {
+                                                                                                item?.rr_number == null ?
+                                                                                                    <>  </>
+                                                                                                    :
+                                                                                                    <span className="badge bg-soft-warning text-warning me-2">{item.rr_number + " - " + item.rr_date}</span>
+                                                                                            }
 
-                                                                                </p>
+                                                                                        </p>
+                                                                                        :
+                                                                                        <p className="mb-1">
+                                                                                            <span className="badge bg-soft-info text-info me-2"><RiShipLine size={12} className="" /> {item.movement_type}</span>
+                                                                                            {
+                                                                                                item?.shipment_type == null ?
+                                                                                                    <>  </>
+                                                                                                    :
+                                                                                                    <>
+                                                                                                        <span className="badge bg-soft-warning text-warning me-2">{item?.vessel_name + " - " + item?.vessel_date}</span>
+                                                                                                    </>
+                                                                                            }
+                                                                                            {/* <span className="badge bg-soft-success text-success me-2">{item.vessel_date?.split(" ")[0]}</span> */}
+                                                                                        </p>
+                                                                                )
                                                                         }
                                                                     </div>
                                                                     <div className="col-auto col-lg-6">
@@ -417,26 +438,52 @@ const LoadVehicleCreateForm = () => {
                                                                 <div>
                                                                     <Link to={`/load/view?id=${item.id}`} className="mb-0">{item.party?.trade_name + " - "}<span className="text-secondary">{item.supplier?.trade_name}</span></Link>
                                                                     <p className="mb-0 text-muted">{item.cargo?.cargo_name}</p>
-                                                                    <div className="row">
-                                                                        <strong>Bags</strong>
-                                                                        {
-                                                                            item.cargo_detail?.is_bulk === true ?
-                                                                                <p className="mb-0">T : {item.cargo_detail?.total_weight}</p>
-                                                                                :
-                                                                                <>
-                                                                                    <p className="mb-0 col-3 col-lg-3"><span>Type : {item.cargo_detail?.bags_type ?? "N/A"}</span></p>
-                                                                                    <p className="mb-0 col-3 col-lg-3"><span>Q : {item.cargo_detail?.bags_qty ?? "N/A"}</span></p>
-                                                                                    <p className="mb-0 col-3 col-lg-3"><span>W : {item.cargo_detail?.bags_weight ?? "N/A"}</span></p>
-                                                                                    <p className="mb-0 col-3 col-lg-3"><span>T : {item.cargo_detail?.total_weight ?? "N/A"}</span></p>
-                                                                                </>
-                                                                        }
-                                                                    </div>
+                                                                    {
+                                                                        item?.movement_type === "shipment" ?
+                                                                            <>
+                                                                                <strong>Container</strong>
+                                                                                <p className="mb-0">
+                                                                                    {
+                                                                                        item?.shipment_type == null && item?.container_type == null ?
+                                                                                            <> 
+                                                                                                <span className="badge bg-soft-danger text-danger me-2">Pandding</span>
+                                                                                             </>
+                                                                                            :
+                                                                                            <>
+                                                                                                <span className="badge bg-soft-warning text-warning me-2">{item?.vessel_name + " - " + item?.vessel_date}</span>
+                                                                                            </>
+                                                                                    }
+                                                                                </p>
+                                                                            </>
+                                                                            :
+                                                                            <div className="row">
+                                                                                <strong>Bags</strong>
+                                                                                {
+                                                                                    item.cargo_detail?.is_bulk === true ?
+                                                                                        <p className="mb-0">T : {item.cargo_detail?.total_weight}</p>
+                                                                                        :
+                                                                                        <>
+                                                                                            <p className="mb-0 col-3 col-lg-3"><span>Type : {item.cargo_detail?.bags_type ?? "N/A"}</span></p>
+                                                                                            <p className="mb-0 col-3 col-lg-3"><span>Q : {item.cargo_detail?.bags_qty}</span></p>
+                                                                                            <p className="mb-0 col-3 col-lg-3"><span>W : {item.cargo_detail?.bags_weight + "KG"}</span></p>
+                                                                                            <p className="mb-0 col-3 col-lg-3"><span>T : {item.cargo_detail?.total_weight + "KG"}</span></p>
+                                                                                        </>
+                                                                                }
+                                                                            </div>
+                                                                    }
                                                                 </div>
                                                                 <hr className="m-1" />
                                                                 <div className="row">
-                                                                    <p className="col-lg-4 col-4">N : {item.net_weight}</p>
-                                                                    <p className="col-lg-4 col-4">G : {item.gross_weight}</p>
-                                                                    <p className="col-lg-4 col-4">T : {item.tare_weight}</p>
+                                                                    {
+                                                                        item?.movement_type === "shipment" ?
+                                                                            <p className="col-lg-4 col-4">N : {item.net_weight + "KG" }</p>
+                                                                            :
+                                                                            <>
+                                                                                <p className="col-lg-4 col-4">N : {item.net_weight + "KG"}</p>
+                                                                                <p className="col-lg-4 col-4">G : {item.gross_weight}</p>
+                                                                                <p className="col-lg-4 col-4">T : {item.tare_weight + "KG"}</p>
+                                                                            </>
+                                                                    }
                                                                 </div>
                                                             </li>
                                                         ))}
@@ -632,6 +679,22 @@ const LoadVehicleCreateForm = () => {
                                         :
                                         <div className="">
                                             <div className="">
+                                                <Form.Label>Vessel Name</Form.Label>
+                                                <Form.Control onChange={handleInputChange} type="text" name="vessel_name" placeholder="Enter vessel name" />
+                                            </div>
+                                            <div className="">
+                                                <Form.Label>Vessel Date</Form.Label>
+                                                <Form.Control onChange={handleInputChange} type="date" name="vessel_date" placeholder="Enter vessel date" />
+                                            </div>
+                                            <div className="">
+                                                <Form.Label>Loading Port</Form.Label>
+                                                <Form.Control onChange={handleInputChange} type="text" name="loading_port" placeholder="Enter loading port" />
+                                            </div>
+                                            <div className="">
+                                                <Form.Label>Loading Country</Form.Label>
+                                                <Form.Control onChange={handleInputChange} type="text" name="loading_country" placeholder="Enter loading country" />
+                                            </div>
+                                            <div className="">
                                                 <Form.Label>Shipment Type</Form.Label>
                                                 <Select
                                                     options={[
@@ -662,20 +725,30 @@ const LoadVehicleCreateForm = () => {
                                         </div>
                                 )
                         }
-                        <div className="">
-                            <Form.Label>Gross Weight</Form.Label>
-                            <Form.Control onChange={handleInputChange} type="text" name="gross_weight" placeholder="Enter gross weight" />
-                            {/* <span className="text-danger">{errorHandler.gross_weight ? errorHandler.gross_weight : ""}</span> */}
-                        </div>
-                        <div className="">
-                            <Form.Label>Tare Weight</Form.Label>
-                            <Form.Control onChange={handleInputChange} type="text" name="tare_weight" placeholder="Enter tare weight" />
-                            {/* <span className="text-danger">{errorHandler.tare_weight ? errorHandler.tare_weight : ""}</span> */}
-                        </div>
-                        <div className="">
-                            <Form.Label>Net Weight</Form.Label>
-                            <Form.Control onChange={handleInputChange} type="text" name="net_weight" placeholder="Enter net weight" />
-                        </div>
+                        {
+                            formData.movement_type === "shipment" ?
+                                <div className="">
+                                    <Form.Label>Net Weight</Form.Label>
+                                    <Form.Control onChange={handleInputChange} type="text" name="net_weight" placeholder="Enter net weight" />
+                                </div>
+                                :
+                                <>
+                                    <div className="">
+                                        <Form.Label>Gross Weight</Form.Label>
+                                        <Form.Control onChange={handleInputChange} type="text" name="gross_weight" placeholder="Enter gross weight" />
+                                        {/* <span className="text-danger">{errorHandler.gross_weight ? errorHandler.gross_weight : ""}</span> */}
+                                    </div>
+                                    <div className="">
+                                        <Form.Label>Tare Weight</Form.Label>
+                                        <Form.Control onChange={handleInputChange} type="text" name="tare_weight" placeholder="Enter tare weight" />
+                                        {/* <span className="text-danger">{errorHandler.tare_weight ? errorHandler.tare_weight : ""}</span> */}
+                                    </div>
+                                    <div className="">
+                                        <Form.Label>Net Weight</Form.Label>
+                                        <Form.Control onChange={handleInputChange} type="text" name="net_weight" placeholder="Enter net weight" />
+                                    </div>
+                                </>
+                        }
                     </Modal.Body>
                     <Modal.Footer>
                         <Button variant="primary" size="sm" type="submit">
