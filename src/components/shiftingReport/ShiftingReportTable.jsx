@@ -199,8 +199,7 @@ const ShiftingReportTable = () => {
             to_party: item.ref_movement?.party?.trade_name,
             supplier_name: item.supplier?.trade_name,
             cargo_name: item.cargo?.cargo_name,
-            form_godown: item.godown?.godown_name,
-            to_godown: item.ref_movement?.godown?.godown_name,
+            godown_name: item.godown?.godown_name,
             net_weight: item.net_weight ?? 0,
             pp_bags: item.cargo_detail?.bags_type === "pp" ? item.cargo_detail?.bags_qty : 0,
             jute_bags: item.cargo_detail?.bags_type === "jute" ? item.cargo_detail?.bags_qty : 0,
@@ -211,8 +210,7 @@ const ShiftingReportTable = () => {
             to_party: "",
             supplier_name: "",
             cargo_name: "",
-            form_godown: "",
-            to_godown: "",
+            godown_name: "",
             net_weight: <strong>{totalNetWeight}</strong>,
             pp_bags: <strong>{totalPPBags}</strong>,
             jute_bags: <strong>{totalJuteBags}</strong>,
@@ -454,7 +452,7 @@ const ShiftingReportTable = () => {
 
                                 <div>
                                     {Object.entries(filters).map(([key, value], index) => {
-                                        if (value === "" || key === "movement_at") return null; // Exclude empty values & movement_at
+                                        if (value === "" || key === "movement_at" || key === "movement_type" || key === "type" ) return null; // Exclude empty values & movement_at
                                         return (
                                             <span key={index} className="badge bg-soft-primary text-primary me-2">
                                                 {key}: {value}
