@@ -148,7 +148,6 @@ const PartiesList = () => {
             </div>
         )
     }));
-
     return (
         <div className="card-body">
             {

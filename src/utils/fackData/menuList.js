@@ -29,7 +29,7 @@ export const menuList = [
         id: 1,
         name:"Unload Vehicle",    
         path: "/unload/create",
-        icon: "feather-truck",
+        icon: "truck-loading",
         dropdownMenu: [
            
         ]
@@ -38,7 +38,7 @@ export const menuList = [
         id: 2,
         name:"Load Vehicle",    
         path: "/load/create",
-        icon: "feather-truck",
+        icon: "truck-unloading",
         dropdownMenu: [
            
         ]
@@ -53,22 +53,9 @@ export const menuList = [
     {
         id: 4,
         name: "Movement Report",
-        path: "#",
-        icon: "file-text",
-        dropdownMenu: [
-            {
-                id: 1,
-                name: "Movement Report",
-                path: "/movement-report",
-                subdropdownMenu: false
-            },
-            {
-                id: 2,
-                name: "Shifting Report",
-                path: "/shifting-report",
-                subdropdownMenu: false
-            }
-        ]
+        path: "/report",
+        icon: "movement report",
+        dropdownMenu: []
     },
     {
         id: 10,

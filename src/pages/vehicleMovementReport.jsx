@@ -6,12 +6,9 @@ import React from "react";
 const VehicleMovementReport = () => {
     return (
         <>
-            <PageHeader />
-            <div className="main-content">
-                <div className="card">
-                    <MovementReportTableHeader />
-                    <MovementReportTable />
-                </div>
+            <div className="card">
+                <MovementReportTableHeader />
+                <MovementReportTable />
             </div>
         </>
     )

@@ -7,12 +7,9 @@ import React from "react";
 const ShiftingReport = () => {
     return (
         <>
-            <PageHeader />
-            <div className="main-content">
-                <div className="card">
-                    <ShiftingReportTableHeader />
-                    <ShiftingReportTable />
-                </div>
+            <div className="card">
+                <ShiftingReportTableHeader />
+                <ShiftingReportTable />
             </div>
         </>
     )

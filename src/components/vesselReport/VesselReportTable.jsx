@@ -2,16 +2,16 @@ import React, { useEffect, useState } from "react";
 import { Form, Placeholder } from "react-bootstrap";
 import { getAllVehicleMovements } from "@/api/VehicleMovements";
 import DataTable from "react-data-table-component";
-import { Link } from "react-router-dom";
 import AsyncSelect from "react-select/async";
 import { party } from "@/api/Party";
 import { cargo } from "@/api/Cargo";
 import { godown } from "@/api/Godown";
 import Select from "react-select";
-import { FiX } from "react-icons/fi";
-import ExcelJS from 'exceljs';
+import { FiEdit3, FiTrash2, FiX } from "react-icons/fi";
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver";
 
-const MovementReportTable = () => {
+const VesselReportTable = () => {
     const [paginate, setPaginate] = React.useState(false);
     const [filters, SetFilters] = React.useState({
         movement_at: "",
@@ -20,11 +20,15 @@ const MovementReportTable = () => {
         cargo_id: "",
         godown_id: "",
         type: "",
+        vessel_name: "",
+        vessel_date: "",
+        movement_type: "shipment",
     });
     const [filterValue, setFilterValue] = useState({ field: "", value: "" });
     // dataTable state
     const [tableData, setTableData] = React.useState([]);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = React.useState(false);
+
     // async fetch data
     // filter option and selcet option functions start
     const filterPartyOption = async (inputValue) => {
@@ -131,55 +135,58 @@ const MovementReportTable = () => {
     }, [filters, paginate]);
 
     // Calculate totals
-    const totalVehicle = tableData.length;
+    const totalRows = tableData.length;
     const totalGrossWeight = tableData.reduce((sum, item) => sum + (item.gross_weight ?? 0), 0);
     const totalNetWeight = tableData.reduce((sum, item) => sum + (item.net_weight ?? 0), 0);
-    const totalPPBags = tableData.reduce((sum, item) => sum + (item.cargo_detail?.bags_type === "pp" ? item.cargo_detail?.bags_qty : 0), 0);
-    const totalJuteBags = tableData.reduce((sum, item) => sum + (item.cargo_detail?.bags_type === "jute" ? item.cargo_detail?.bags_qty : 0), 0);
-    const totalWeight = tableData.reduce((sum, item) => sum + (item.cargo_detail?.total_weight ?? 0), 0);
+    const totalContainer = tableData.reduce((sum, item) => sum + (item.container_no ?? 0), 0);
 
     // Table columns
     const columns = [
-        { name: "Vehicle No", selector: row => row.vehicle_no, sortable: true },
-        { name: "Party Name", selector: row => row.party_name, sortable: true },
-        { name: "Godown Name", selector: row => row.godown_name, sortable: true },
-        { name: "Supplier Name", selector: row => row.supplier_name, sortable: true },
-        { name: "Cargo Name", selector: row => row.cargo_name, sortable: true },
-        { name: "Type", selector: row => row.movement_type, sortable: true },
+        { name: "Vessel Name", selector: row => row.vessel_name, sortable: true, },
+        { name: "Vessel Date", selector: row => row.vessel_date, sortable: true, width: "9%" },
+        { name: "Shiment", selector: row => row.shipment_type, sortable: true, width: "15%" },
+        { name: "Party Name", selector: row => row.party_name, sortable: true, width: "13%" },
+        { name: "Godown Name", selector: row => row.godown_name, sortable: true, width: "13%" },
+        { name: "Supplier Name", selector: row => row.supplier_name, sortable: true, width: "13%" },
+        { name: "Cargo Name", selector: row => row.cargo_name, sortable: true, width: "13%" },
+        { name: "Type", selector: row => row.movement_type, sortable: true, width: "fit-content" },
         { name: "Movement At", selector: row => row.movement_at, sortable: true },
         { name: "Net Weight", selector: row => row.net_weight, sortable: true },
         { name: "Gross Weight", selector: row => row.gross_weight, sortable: true },
-        { name: "PP Bags", selector: row => row.pp_bags, sortable: true },
-        { name: "Jute Bags", selector: row => row.jute_bags, sortable: true },
-        { name: "Total Weight", selector: row => row.total_weight, sortable: true },
     ];
 
     // Process table data and add summary row
     const data = [
         ...tableData.map(item => ({
-            vehicle_no: item.vehicle_no,
+            vessel_name: item.vessel_name,
+            vessel_date: item.vessel_date,
+            shipment_type: (
+                <>
+                    {item.shipment_type} - <span className="badge bg-soft-primary text-primary me-2">{item.container_no}</span> x {item.container_type}'
+                </>
+            ),
             party_name: item.party?.trade_name,
             godown_name: item.godown?.godown_name,
             supplier_name: item.supplier?.trade_name,
             cargo_name: item.cargo?.cargo_name,
-            movement_type: <>
-                {
-                    item.type === "load" ?
+            movement_type: (
+                <>
+                    {item.type === "load" ? (
                         <span className="badge bg-soft-warning text-warning me-2">{item.type}</span>
-                        :
+                    ) : (
                         <span className="badge bg-soft-primary text-primary me-2">{item.type}</span>
-                }
-            </>,
+                    )}
+                </>
+            ),
             movement_at: item.movement_at,
             net_weight: item.net_weight ?? 0,
             gross_weight: item.gross_weight ?? 0,
-            pp_bags: item.cargo_detail?.bags_type === "pp" ? item.cargo_detail?.bags_qty : 0,
-            jute_bags: item.cargo_detail?.bags_type === "jute" ? item.cargo_detail?.bags_qty : 0,
-            total_weight: item.cargo_detail?.total_weight ?? 0,
         })),
         // Add footer row
         {
-            vehicle_no: "Total : " + totalVehicle,
+            vessel_name: <strong>Total: {totalRows}</strong>,
+            vessel_date: "",
+            shipment_type: <strong>{totalContainer}</strong>,
             party_name: "",
             godown_name: "",
             supplier_name: "",
@@ -188,13 +195,74 @@ const MovementReportTable = () => {
             movement_at: "",
             net_weight: <strong>{totalNetWeight}</strong>,
             gross_weight: <strong>{totalGrossWeight}</strong>,
-            pp_bags: <strong>{totalPPBags}</strong>,
-            jute_bags: <strong>{totalJuteBags}</strong>,
-            total_weight: <strong>{totalWeight}</strong>,
         }
     ];
 
     // Download excel file of table 
+    // const downloadExcel = () => {
+    //     if (!tableData || tableData.length === 0) {
+    //         console.error("No data available to export!");
+    //         return;
+    //     }
+
+    //     // Format data for Excel
+    //     const formattedData = tableData.map(item => ({
+    //         "Vessel Name": item.vessel_name,
+    //         "Vessel Date": item.vessel_date,
+    //         "Shipment": item.shipment_type + " - " + item.container_no + " x " + item.container_type + "'",
+    //         "Party Name": item.party?.trade_name,
+    //         "Godown Name": item.godown?.godown_name,
+    //         "Supplier Name": item.supplier?.trade_name,
+    //         "Cargo Name": item.cargo?.cargo_name,
+    //         "Movement Type": item.type,
+    //         "Movement At": item.movement_at,
+    //         "Net Weight": item.net_weight ?? 0,
+    //         "Gross Weight": item.gross_weight ?? 0,
+    //     }));
+
+    //     formattedData.push({
+    //         "Vessel Name": `Total: ${totalRows}`,
+    //         "Vessel Date": "",
+    //         "Shipment ": totalContainer,
+    //         "Party Name": "",
+    //         "Godown Name": "",
+    //         "Supplier Name": "",
+    //         "Cargo Name": "",
+    //         "Movement Type": "",
+    //         "Movement At": "",
+    //         "Net Weight": totalNetWeight,
+    //         "Gross Weight": totalGrossWeight,
+    //     });
+
+    //     sheet.getRow(1).border = {
+    //         top: { style: "thick", color: { argb: "FFFF0000" } },
+    //         left: { style: "thick", color: { argb: "000000FF" } },
+    //         bottom: { style: "thick", color: { argb: "F08080" } },
+    //         right: { style: "thick", color: { argb: "FF00FF00" } },
+    //     };
+
+    //     sheet.getRow(1).fill = {
+    //         type: "pattern",
+    //         pattern: "darkVertical",
+    //         fgColor: { argb: "FFFF00" },
+    //     };
+
+    //     sheet.getRow(1).font = {
+    //         name: "Comic Sans MS",
+    //         family: 4,
+    //         size: 18,
+    //         bold: true,
+    //     };
+
+    //     // Create worksheet and workbook
+    //     const ws = XLSX.utils.json_to_sheet(formattedData);
+    //     const wb = XLSX.utils.book_new();
+    //     XLSX.utils.book_append_sheet(wb, ws, "Movement Report");
+
+    //     // Save the file
+    //     XLSX.writeFile(wb, "Movement_Report.xlsx");
+    // };
+
     const downloadExcel = async () => {
         if (!tableData || tableData.length === 0) {
             console.error("No data available to export!");
@@ -205,83 +273,104 @@ const MovementReportTable = () => {
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet("Movement Report");
 
-        // Define columns
-        worksheet.columns = [
-            { header: "Vehicle No", key: "vehicle_no", width: 15 },
-            { header: "Party Name", key: "party_name", width: 20 },
-            { header: "Godown Name", key: "godown_name", width: 20 },
-            { header: "Supplier Name", key: "supplier_name", width: 20 },
-            { header: "Cargo Name", key: "cargo_name", width: 20 },
-            { header: "Movement Type", key: "movement_type", width: 15 },
-            { header: "Movement At", key: "movement_at", width: 15 },
-            { header: "Net Weight", key: "net_weight", width: 15 },
-            { header: "Gross Weight", key: "gross_weight", width: 15 },
-            { header: "PP Bags", key: "pp_bags", width: 10 },
-            { header: "Jute Bags", key: "jute_bags", width: 10 },
-            { header: "Total Weight", key: "total_weight", width: 15 },
+        // Define headers
+        const headers = [
+            "Vessel Name",
+            "Vessel Date",
+            "container",
+            "Party Name",
+            "Godown Name",
+            "Supplier Name",
+            "Cargo Name",
+            "Movement Type",
+            "Movement At",
+            "Net Weight",
+            "Gross Weight"
         ];
 
-        // Apply bold style, black color, and thin border to headers
-        worksheet.getRow(1).eachCell((cell) => {
-            cell.font = { bold: true, color: { argb: "000000" } };
-            cell.border = {
-                top: { style: "thin" },
-                left: { style: "thin" },
-                bottom: { style: "thin" },
-                right: { style: "thin" },
+        // Add header row
+        const headerRow = worksheet.addRow(headers);
+
+        // Apply styling to the header row
+        headerRow.eachCell((cell) => {
+            cell.fill = {
+                type: "pattern",
+                pattern: "solid",
+                fgColor: { argb: "FFFFFF" }, // Yellow background
+                bgColor: { argb: "FFFF00" }, // Orange fill
             };
+            cell.font = {
+                name: "arial",
+                size: 10,
+                bold: true,
+            };
+            cell.border = {
+                top: { style: "thin", color: { argb: "000000" } }, // Red
+                left: { style: "thin", color: { argb: "000000" } }, // Blue
+                bottom: { style: "thin", color: { argb: "000000" } }, // Light Red
+                right: { style: "thin", color: { argb: "000000" } }, // Green
+            };
+            cell.alignment = { vertical: "middle", horizontal: "center" };
         });
 
-        // Format data for Excel
-        tableData.forEach(item => {
-            worksheet.addRow({
-                vehicle_no: item.vehicle_no,
-                party_name: item.party?.trade_name || "",
-                godown_name: item.godown?.godown_name || "",
-                supplier_name: item.supplier?.trade_name || "",
-                cargo_name: item.cargo?.cargo_name || "",
-                movement_type: item.type || "",
-                movement_at: item.movement_at || "",
-                net_weight: item.net_weight ?? 0,
-                gross_weight: item.gross_weight ?? 0,
-                pp_bags: item.cargo_detail?.bags_type === "pp" ? item.cargo_detail?.bags_qty : 0,
-                jute_bags: item.cargo_detail?.bags_type === "jute" ? item.cargo_detail?.bags_qty : 0,
-                total_weight: item.cargo_detail?.total_weight ?? 0,
-            });
+        // Format and add data rows
+        tableData.forEach((item) => {
+            worksheet.addRow([
+                item.vessel_name,
+                item.vessel_date,
+                `${item.shipment_type} - ${item.container_no} x ${item.container_type}'`,
+                item.party?.trade_name || "",
+                item.godown?.godown_name || "",
+                item.supplier?.trade_name || "",
+                item.cargo?.cargo_name || "",
+                item.type || "",
+                item.movement_at || "",
+                item.net_weight ?? 0,
+                item.gross_weight ?? 0,
+            ]);
         });
 
-        // Add totals row
-        const totalRow = worksheet.addRow({
-            vehicle_no: `Total: ${totalVehicle}`,
-            net_weight: totalNetWeight,
-            gross_weight: totalGrossWeight,
-            pp_bags: totalPPBags,
-            jute_bags: totalJuteBags,
-            total_weight: totalWeight,
-        });
+        // Add summary row (Total row)
+        const totalRow = worksheet.addRow([
+            `Total: ${totalRows}`,
+            "",
+            totalContainer,
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            totalNetWeight,
+            totalGrossWeight,
+        ]);
 
-        // Apply bold style, black color, and thin border to totals row
+        // Apply styling to the total row (Footer)
         totalRow.eachCell((cell) => {
-            cell.font = { bold: true, color: { argb: "000000" } };
-            cell.border = {
-                top: { style: "thin" },
-                left: { style: "thin" },
-                bottom: { style: "thin" },
-                right: { style: "thin" },
+            cell.font = {
+                name: "arial",
+                size: 10,
+                bold: true, // Make footer row bold
+                color: { argb: "FF0000" }, // Red text color
             };
+            cell.alignment = { vertical: "middle", horizontal: "left" };
         });
 
-        // Create and save file
+        // Adjust column widths automatically
+        worksheet.columns.forEach((column) => {
+            column.width = column.header ? column.header.length + 5 : 15;
+        });
+
+        // Generate and download file
         const buffer = await workbook.xlsx.writeBuffer();
-        const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `Vehicle_Report_${filters.movement_at}.xlsx`;
-        link.click();
+        saveAs(new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }), `Vessel_Report/${filters.movement_at}.xlsx`);
     };
 
+
     const filterOption = [
-        { value: "movement_type", label: "Movement Type" },
+        { value: "vessel_date", label: "Vessel Date" },
+        { value: "vessel_name", label: "Vessel Name" },
+        { value: "type", label: "Movement Type" },
         { value: "party_id", label: "Party Name" },
         { value: "supplier_id", label: "Supplier Name" },
         { value: "cargo_id", label: "Cargo Name" },
@@ -332,6 +421,54 @@ const MovementReportTable = () => {
                                                 value={filterValue.field ? { value: filterValue.field, label: filterOption.find(opt => opt.value === filterValue.field)?.label } : { value: "", label: "" }}
                                             />
                                         </div>
+                                        {
+                                            filterValue.field === "vessel_name" && (
+                                                <>
+                                                    <div className="col-sm-12 col-lg-6">
+                                                        <Form.Label>Vessel Name</Form.Label>
+                                                        <Form.Control
+                                                            onChange={(e) => SetFilters({ ...filters, vessel_name: e.target.value })}
+                                                            type="text"
+                                                            name="vessel_name"
+                                                            placeholder="Enter vessel name"
+                                                        />
+                                                    </div>
+                                                </>
+                                            )
+                                        }
+                                        {
+                                            filterValue.field === "vessel_date" && (
+                                                <>
+                                                    <div className="col-sm-12 col-lg-6">
+                                                        <Form.Label>Vessel Date</Form.Label>
+                                                        <Form.Control
+                                                            onChange={(e) => SetFilters({ ...filters, vessel_date: e.target.value })}
+                                                            type="date"
+                                                            name="vessel_date"
+                                                            placeholder="Enter vessel date"
+                                                        />
+                                                    </div>
+                                                </>
+                                            )
+                                        }
+                                        {
+                                            filterValue.field === "type" && (
+                                                <>
+                                                    <div className="col-sm-12 col-lg-6">
+                                                        <Form.Label>Type</Form.Label>
+                                                        <Select
+                                                            name="type"
+                                                            options={[
+                                                                { value: "", label: "All" },
+                                                                { value: "load", label: "Load" },
+                                                                { value: "unload", label: "Unload" },
+                                                            ]}
+                                                            onChange={(selectOption) => SetFilters({ ...filters, type: selectOption.value })}
+                                                        />
+                                                    </div>
+                                                </>
+                                            )
+                                        }
                                         {
                                             filterValue.field === "party_id" && (
                                                 <>
@@ -401,18 +538,15 @@ const MovementReportTable = () => {
                                             )
                                         }
                                         {
-                                            filterValue.field === "movement_type" && (
+                                            filterValue.field === "rr_date" && (
                                                 <>
                                                     <div className="col-sm-12 col-lg-6">
-                                                        <Form.Label>Type</Form.Label>
-                                                        <Select
-                                                            name="type"
-                                                            options={[
-                                                                { value: "", label: "All" },
-                                                                { value: "load", label: "Load" },
-                                                                { value: "unload", label: "Unload" },
-                                                            ]}
-                                                            onChange={(selectOption) => SetFilters({ ...filters, type: selectOption.value })}
+                                                        <Form.Label>RR Date</Form.Label>
+                                                        <Form.Control
+                                                            onChange={(e) => SetFilters({ ...filters, rr_date: e.target.value })}
+                                                            type="date"
+                                                            name="rr_date"
+                                                            placeholder="Enter RR date"
                                                         />
                                                     </div>
                                                 </>
@@ -422,7 +556,7 @@ const MovementReportTable = () => {
                                 </Form>
                                 <div>
                                     {Object.entries(filters).map(([key, value], index) => {
-                                        if (value === "" || key === "movement_at") return null; // Exclude empty values & movement_at
+                                        if (value === "" || key === "movement_at" || key === "movement_type") return null; // Exclude empty values & movement_at
                                         return (
                                             <span key={index} className="badge bg-soft-primary text-primary me-2">
                                                 {key}: {value}
@@ -468,4 +602,4 @@ const MovementReportTable = () => {
     );
 };
 
-export default MovementReportTable;
+export default VesselReportTable;

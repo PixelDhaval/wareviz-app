@@ -3,6 +3,8 @@ import { Placeholder, Modal, Form } from "react-bootstrap";
 import { FiEdit } from "react-icons/fi";
 import { updateVehicle } from "@/api/VehicleMovements";
 import Swal from "sweetalert2";
+import { godown } from "@/api/Godown";
+import AsyncSelect from "react-select/async";
 
 const BasicDetails = ({ viewVehicleList }) => {
     // list state state 
@@ -33,7 +35,8 @@ const BasicDetails = ({ viewVehicleList }) => {
         rr_number: "",
         gross_weight: "",
         tare_weight: "",
-        net_weight: ""
+        net_weight: "",
+        godown_id: ""
     });
 
     // Fetch data from API
@@ -45,6 +48,27 @@ const BasicDetails = ({ viewVehicleList }) => {
     useEffect(() => {
         setBasicDetails(viewVehicleList || []);
     }, [viewVehicleList])
+
+    // godown list state
+    const filterGodownOption = async (inputValue) => {
+        const response = await godown(inputValue);
+        const data = response.map((item) => {
+            return { value: item.id, label: item.godown_name };
+        })
+        return data;
+    };
+    const godownOption = (inputValue) => {
+        if (inputValue.length > 1) {
+            return new Promise((resolve) => {
+                resolve(filterGodownOption(inputValue));
+            });
+        }
+        else {
+            return new Promise((resolve) => {
+                resolve([]);
+            });
+        }
+    }
 
     // handle form submit
     const handleChange = (e) => {
@@ -63,7 +87,9 @@ const BasicDetails = ({ viewVehicleList }) => {
             gross_weight: basicDetails.gross_weight,
             tare_weight: basicDetails.tare_weight,
             rr_number: basicDetails.rr_number,
-            rr_date: basicDetails.rr_date
+            rr_date: basicDetails.rr_date,
+            godown_id: basicDetails.godown_id,
+            godown_name: basicDetails.godown?.godown_name
         })
         setShowModel(true);
     }
@@ -169,6 +195,18 @@ const BasicDetails = ({ viewVehicleList }) => {
                 </Modal.Header>
                 <Form onSubmit={handleSubmit}>
                     <Modal.Body>
+                        <div>
+                            <Form.Label>Godown Name</Form.Label>
+                            <AsyncSelect
+                                cacheOptions
+                                defaultOptions
+                                loadOptions={godownOption}
+                                name="party_id"
+                                isClearable={true}
+                                onChange={(opt) => setFormData({ ...formData, godown_id: opt ? opt.value : "" , godown_name: opt ? opt.label : "" })}
+                                value={formData.godown_id ? { value: formData.godown_id, label: formData.godown_name } : null}
+                            />
+                        </div>
                         <div className="">
                             {
                                 basicDetails?.movement_type == "vehicle" ?
@@ -220,14 +258,14 @@ const BasicDetails = ({ viewVehicleList }) => {
                             </div>
                             <div className="">
                                 <Form.Label>Tare Weight</Form.Label>
-                                <Form.Control onChange={handleChange} value={formData.tare_weight} type="text" name="tare_weight" placeholder="Enter tare weight" />        
+                                <Form.Control onChange={handleChange} value={formData.tare_weight} type="text" name="tare_weight" placeholder="Enter tare weight" />
                                 <span className="text-danger">{errorHandler.tare_weight ? errorHandler.tare_weight : ""}</span>
                             </div>
                             <div className="">
                                 <Form.Label>Net Weight</Form.Label>
-                                <Form.Control onChange={handleChange} value={formData.net_weight} type="text" name="net_weight" placeholder="Enter net weight" />        
-                                <span className="text-danger">{errorHandler.net_weight ? errorHandler.net_weight : ""}</span>                                
-                            </div>  
+                                <Form.Control onChange={handleChange} value={formData.net_weight} type="text" name="net_weight" placeholder="Enter net weight" />
+                                <span className="text-danger">{errorHandler.net_weight ? errorHandler.net_weight : ""}</span>
+                            </div>
                         </div>
                     </Modal.Body>
                     <Modal.Footer>

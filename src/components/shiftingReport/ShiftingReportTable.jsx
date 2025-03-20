@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Form } from "react-bootstrap";
+import { Form, Placeholder } from "react-bootstrap";
 import { getAllVehicleMovements } from "@/api/VehicleMovements";
 import DataTable from "react-data-table-component";
-import { Link } from "react-router-dom";
 import Select from "react-select";
 import AsyncSelect from "react-select/async";
 import { party } from "@/api/Party";
 import { cargo } from "@/api/Cargo";
-import * as XLSX from "xlsx";
 import { godown } from "@/api/Godown";
 import { FiX } from "react-icons/fi";
+import ExcelJS from 'exceljs';
 
 const ShiftingReportTable = () => {
     const [paginate, setPaginate] = React.useState(false);
@@ -26,13 +25,23 @@ const ShiftingReportTable = () => {
 
     // dataTable state
     const [tableData, setTableData] = React.useState([]);
-
+    const [isLoading, setIsLoading] = useState(false);
     // async fetch data
     // filter option and selcet option functions start
     const filterPartyOption = async (inputValue) => {
         const response = await party(inputValue);
         const data = response.map((item) => {
-            return { value: item.id, label: item.trade_name };
+            return {
+                value: item.id, label: (
+                    <div>
+                        <span className="text-dark bold">{item.trade_name}</span>
+                        <br />
+                        <span className="text-muted" style={{ color: 'gray', fontStyle: "italic" }}>{item.city + " , " + item.state?.state_name}</span>
+                        <br />
+                        <p>{item.gst}</p>
+                    </div>
+                )
+            };
         })
         return data;
     };
@@ -114,11 +123,14 @@ const ShiftingReportTable = () => {
 
     // useEffect for fetching data
     useEffect(() => {
-        const fetchData = async () => {
-            const response = await getAllVehicleMovements(filters, "", "", "", paginate);
-            setTableData(response?.data?.data || []);
-        };
-        fetchData();
+        setIsLoading(true);
+        if (filters.movement_at && filters.movement_type !== "") {
+            const fetchData = async () => {
+                const response = await getAllVehicleMovements(filters, "", "", "", paginate);
+                setTableData(response?.data?.data || []);
+            };
+            fetchData().then(() => setIsLoading(false));
+        }
     }, [filters, paginate]);
 
     // Calculate totals
@@ -209,11 +221,14 @@ const ShiftingReportTable = () => {
     ];
 
     // download excel file of table
-    const downloadExcel = () => {
+    const downloadExcel = async () => {
         if (!tableData || tableData.length === 0) {
             console.error("No data available to export!");
             return;
         }
+
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet("Shifting Report");
 
         let formattedData = [];
         let totalRow = {};
@@ -241,8 +256,7 @@ const ShiftingReportTable = () => {
                 "Jute Bags": totalJuteBags,
                 "Total Weight": totalWeight,
             };
-        }
-        else if (filters.movement_type === "party_shifting") {
+        } else if (filters.movement_type === "party_shifting") {
             formattedData = tableData.map(item => ({
                 "From Party": item.party?.trade_name,
                 "To Party": item.ref_movement?.party?.trade_name,
@@ -266,11 +280,40 @@ const ShiftingReportTable = () => {
                 "Total Weight": totalWeight,
             };
         }
-        formattedData.push(totalRow);
-        const ws = XLSX.utils.json_to_sheet(formattedData);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Shifting Report");
-        XLSX.writeFile(wb, `Shifting_Report_${filters.movement_type}.xlsx`);
+
+        // Add header row with styling
+        const headers = Object.keys(formattedData[0] || totalRow);
+        const headerRow = worksheet.addRow(headers);
+        headerRow.eachCell((cell) => {
+            cell.font = { bold: true, color: { argb: '000000' } }; // Bold black text
+            cell.border = { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } }; // Thin border
+        });
+
+        // Add data rows
+        formattedData.forEach(item => {
+            worksheet.addRow(Object.values(item));
+        });
+
+        // Add total row with styling
+        const totalRowData = Object.values(totalRow);
+        const footerRow = worksheet.addRow(totalRowData);
+        footerRow.eachCell((cell) => {
+            cell.font = { bold: true, color: { argb: '000000' } }; // Bold black text
+            cell.border = { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } }; // Thin border
+        });
+
+        // Adjust column widths
+        worksheet.columns.forEach((column, index) => {
+            column.width = headers[index].length + 5;
+        });
+
+        // Save the file
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `Shifting_Report_${filters.movement_type}.xlsx`;
+        link.click();
     };
 
     // filter option state 
@@ -322,130 +365,154 @@ const ShiftingReportTable = () => {
                 </div>
             </Form>
 
-            {filters.movement_at !== '' && (
-                <>
-                    <Form onSubmit={handleSubmit}>
-                        <div className="row my-2 align-items-end">
-                            <div className="col-sm-12 col-lg-6">
-                                <Form.Label>Select Field</Form.Label>
-                                <Select
-                                    name="filterOption"
-                                    options={filterOption}
-                                    onChange={(selectOption) => setFilterValue({ field: selectOption.value, value: "" })}
-                                    value={filterValue.field ? { value: filterValue.field, label: filterOption.find(opt => opt.value === filterValue.field)?.label } : { value: "", label: "" }}
-                                />
-                            </div>
-                            {
-                                filterValue.field === "party_id" && (
-                                    <>
+            {
+                !isLoading ?
+                    <>
+                        {filters.movement_at !== '' && (
+                            <>
+                                <Form onSubmit={handleSubmit}>
+                                    <div className="row my-2 align-items-end">
                                         <div className="col-sm-12 col-lg-6">
-                                            <Form.Label>Party Name</Form.Label>
-                                            <AsyncSelect
-                                                cacheOptions
-                                                defaultOptions
-                                                loadOptions={partyOption}
-                                                name="party_id"
-                                                isClearable={true} // Enables clearing selection
-                                                onChange={(opt) => SetFilters({ ...filters, party_id: opt ? opt.value : "" })} // Handle null value
+                                            <Form.Label>Select Field</Form.Label>
+                                            <Select
+                                                name="filterOption"
+                                                options={filterOption}
+                                                onChange={(selectOption) => setFilterValue({ field: selectOption.value, value: "" })}
+                                                value={filterValue.field ? { value: filterValue.field, label: filterOption.find(opt => opt.value === filterValue.field)?.label } : { value: "", label: "" }}
                                             />
                                         </div>
-                                    </>
-                                )
-                            }
-                            {
-                                filterValue.field === "supplier_id" && (
-                                    <>
-                                        <div className="col-sm-12 col-lg-6">
-                                            <Form.Label>Supplier Name</Form.Label>
-                                            <AsyncSelect
-                                                cacheOptions
-                                                defaultOptions
-                                                loadOptions={supplierOption}
-                                                name="party_id"
-                                                isClearable={true}
-                                                onChange={(opt) => SetFilters({ ...filters, supplier_id: opt ? opt.value : "" })}
-                                            />
-                                        </div>
-                                    </>
-                                )
-                            }
-                            {
-                                filterValue.field === "cargo_id" && (
-                                    <>
-                                        <div className="col-sm-12 col-lg-6">
-                                            <Form.Label>Cargo Name</Form.Label>
-                                            <AsyncSelect
-                                                cacheOptions
-                                                defaultOptions
-                                                loadOptions={cargoOption}
-                                                name="party_id"
-                                                isClearable={true}
-                                                onChange={(opt) => SetFilters({ ...filters, cargo_id: opt ? opt.value : "" })}
-                                            />
-                                        </div>
-                                    </>
-                                )
-                            }
-                            {
-                                filterValue.field === "godown_id" && (
-                                    <>
-                                        <div className="col-sm-12 col-lg-6">
-                                            <Form.Label>Godown Name</Form.Label>
-                                            <AsyncSelect
-                                                cacheOptions
-                                                defaultOptions
-                                                loadOptions={godownOption}
-                                                name="party_id"
-                                                isClearable={true}
-                                                onChange={(opt) => SetFilters({ ...filters, godown_id: opt ? opt.value : "" })}
-                                            />
-                                        </div>
-                                    </>
-                                )
-                            }
-                        </div>
-                    </Form>
+                                        {
+                                            filterValue.field === "party_id" && (
+                                                <>
+                                                    <div className="col-sm-12 col-lg-6">
+                                                        <Form.Label>Party Name</Form.Label>
+                                                        <AsyncSelect
+                                                            cacheOptions
+                                                            defaultOptions
+                                                            loadOptions={partyOption}
+                                                            name="party_id"
+                                                            isClearable={true} // Enables clearing selection
+                                                            onChange={(opt) => SetFilters({ ...filters, party_id: opt ? opt.value : "" })} // Handle null value
+                                                        />
+                                                    </div>
+                                                </>
+                                            )
+                                        }
+                                        {
+                                            filterValue.field === "supplier_id" && (
+                                                <>
+                                                    <div className="col-sm-12 col-lg-6">
+                                                        <Form.Label>Supplier Name</Form.Label>
+                                                        <AsyncSelect
+                                                            cacheOptions
+                                                            defaultOptions
+                                                            loadOptions={supplierOption}
+                                                            name="party_id"
+                                                            isClearable={true}
+                                                            onChange={(opt) => SetFilters({ ...filters, supplier_id: opt ? opt.value : "" })}
+                                                        />
+                                                    </div>
+                                                </>
+                                            )
+                                        }
+                                        {
+                                            filterValue.field === "cargo_id" && (
+                                                <>
+                                                    <div className="col-sm-12 col-lg-6">
+                                                        <Form.Label>Cargo Name</Form.Label>
+                                                        <AsyncSelect
+                                                            cacheOptions
+                                                            defaultOptions
+                                                            loadOptions={cargoOption}
+                                                            name="party_id"
+                                                            isClearable={true}
+                                                            onChange={(opt) => SetFilters({ ...filters, cargo_id: opt ? opt.value : "" })}
+                                                        />
+                                                    </div>
+                                                </>
+                                            )
+                                        }
+                                        {
+                                            filterValue.field === "godown_id" && (
+                                                <>
+                                                    <div className="col-sm-12 col-lg-6">
+                                                        <Form.Label>Godown Name</Form.Label>
+                                                        <AsyncSelect
+                                                            cacheOptions
+                                                            defaultOptions
+                                                            loadOptions={godownOption}
+                                                            name="party_id"
+                                                            isClearable={true}
+                                                            onChange={(opt) => SetFilters({ ...filters, godown_id: opt ? opt.value : "" })}
+                                                        />
+                                                    </div>
+                                                </>
+                                            )
+                                        }
+                                    </div>
+                                </Form>
 
-                    <div>
-                        {Object.entries(filters).map(([key, value], index) => {
-                            if (value === "" || key === "movement_at") return null; // Exclude empty values & movement_at
-                            return (
-                                <span key={index} className="badge bg-soft-primary text-primary me-2">
-                                    {key}: {value}
-                                    <FiX className="ms-2 cursor-pointer" onClick={() => handleRemoveFilter(key)} />
-                                </span>
-                            );
-                        })}
-                    </div>
+                                <div>
+                                    {Object.entries(filters).map(([key, value], index) => {
+                                        if (value === "" || key === "movement_at") return null; // Exclude empty values & movement_at
+                                        return (
+                                            <span key={index} className="badge bg-soft-primary text-primary me-2">
+                                                {key}: {value}
+                                                <FiX className="ms-2 cursor-pointer" onClick={() => handleRemoveFilter(key)} />
+                                            </span>
+                                        );
+                                    })}
+                                </div>
 
-                    {
-                        filters.movement_type == "godown_shifting" ?
-                            <DataTable
-                                columns={godownTableColumns}
-                                data={godownTableData}
-                                highlightOnHover
-                                striped
-                                actions={
-                                    <button className="btn btn-success" onClick={downloadExcel}>
-                                        Export to Excel
-                                    </button>
+                                {
+                                    filters.movement_type == "godown_shifting" ?
+                                        <DataTable
+                                            columns={godownTableColumns}
+                                            data={godownTableData}
+                                            highlightOnHover
+                                            striped
+                                            actions={
+                                                <button className="btn btn-success" onClick={downloadExcel}>
+                                                    Export to Excel
+                                                </button>
+                                            }
+                                        />
+                                        :
+                                        <DataTable
+                                            columns={partyTableColumns}
+                                            data={partyTableData}
+                                            highlightOnHover
+                                            striped
+                                            actions={
+                                                <button className="btn btn-success" onClick={downloadExcel}>
+                                                    Export to Excel
+                                                </button>
+                                            }
+                                        />
                                 }
-                            />
-                            :
-                            <DataTable
-                                columns={partyTableColumns}
-                                data={partyTableData}
-                                highlightOnHover
-                                striped
-                                actions={
-                                    <button className="btn btn-success" onClick={downloadExcel}>
-                                        Export to Excel
-                                    </button>
-                                }
-                            />
-                    }
-                </>
-            )}
+                            </>
+                        )}
+                    </>
+                    :
+                    <>
+                        <table className="table table-striped mt-5">
+                            <tbody>
+                                <tr>
+                                    <td><Placeholder animation="glow"><Placeholder xs={6} /></Placeholder></td>
+                                    <td><Placeholder animation="glow"><Placeholder xs={6} /></Placeholder></td>
+                                    <td><Placeholder animation="glow"><Placeholder xs={4} /></Placeholder></td>
+                                    <td><Placeholder animation="glow"><Placeholder xs={4} /></Placeholder></td>
+                                    <td><Placeholder animation="glow"><Placeholder xs={8} /></Placeholder></td>
+                                    <td><Placeholder animation="glow"><Placeholder xs={8} /></Placeholder></td>
+                                    <td><Placeholder animation="glow"><Placeholder xs={8} /></Placeholder></td>
+                                    <td><Placeholder animation="glow"><Placeholder xs={8} /></Placeholder></td>
+                                    <td><Placeholder animation="glow"><Placeholder xs={8} /></Placeholder></td>
+                                    <td><Placeholder animation="glow"><Placeholder xs={8} /></Placeholder></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </>
+            }
         </div>
     );
 };

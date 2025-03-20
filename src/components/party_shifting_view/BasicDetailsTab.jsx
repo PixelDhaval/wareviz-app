@@ -76,7 +76,17 @@ const BasicDetailsTab = ({ shiftingDetails }) => {
     const filterPartyOption = async (inputValue) => {
         const response = await party(inputValue);
         const data = response.map((item) => {
-            return { value: item.id, label: item.legal_name };
+            return {
+                value: item.id, label: (
+                    <div>
+                        <span className="text-dark bold">{item.trade_name}</span>
+                        <br />
+                        <span className="text-muted" style={{ color: 'gray', fontStyle: "italic" }}>{item.city + " , " + item.state?.state_name}</span>
+                        <br />
+                        <p>{item.gst}</p>
+                    </div>
+                )
+            };
         })
         return data;
     };

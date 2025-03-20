@@ -27,6 +27,7 @@ import LoadVehicleCreate from "../pages/load-vehicle-create";
 import LoadVehicleView from "../pages/load-vehicle-view";
 import VehicleMovementReport from "../pages/vehicleMovementReport";
 import ShiftingReport from "../pages/shifting-report";
+import Report from "../pages/report";
 
 export const router = createBrowserRouter([
     {
@@ -102,12 +103,8 @@ export const router = createBrowserRouter([
                 element: <PartyShiftingView />
             },
             {
-                path: "/movement-report",
-                element: <VehicleMovementReport />
-            },
-            {
-                path: "/shifting-report",
-                element: <ShiftingReport />
+                path:"/report",
+                element: <Report />
             }
         ]
     },

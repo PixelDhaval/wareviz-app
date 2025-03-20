@@ -27,7 +27,17 @@ const LoadVehicleCreateForm = () => {
     const filterPartyOption = async (inputValue) => {
         const response = await party(inputValue);
         const data = response.map((item) => {
-            return { value: item.id, label: item.trade_name };
+            return {
+                value: item.id, label: (
+                    <div>
+                        <span className="text-dark bold">{item.trade_name}</span>
+                        <br />
+                        <span className="text-muted" style={{ color: 'gray', fontStyle: "italic" }}>{item.city + " , " + item.state?.state_name}</span>
+                        <br />
+                        <p>{item.gst}</p>
+                    </div>
+                )
+            };
         })
         return data;
     };
@@ -284,7 +294,7 @@ const LoadVehicleCreateForm = () => {
                                                 name="party_id"
                                                 value={formData.party_id ? { value: formData.party_id, label: formData.party_name } : null}
                                                 isClearable={true}
-                                                onChange={(opt) =>{
+                                                onChange={(opt) => {
                                                     setFormData({
                                                         ...formData,
                                                         party_id: opt ? opt.value : "",
@@ -347,7 +357,7 @@ const LoadVehicleCreateForm = () => {
                                                 ]}
                                                 onChange={(selectOption) => {
                                                     setFormData({ ...formData, movement_type: selectOption ? selectOption.value : "" },
-                                                    setFilter({ ...filter, movement_type: selectOption ? selectOption.value : "" }))
+                                                        setFilter({ ...filter, movement_type: selectOption ? selectOption.value : "" }))
                                                 }}
                                             />
                                             <span className="text-danger">{errorHandler.movement_type ? errorHandler.movement_type : ""}</span>
@@ -455,9 +465,9 @@ const LoadVehicleCreateForm = () => {
                                                                                 <p className="mb-0">
                                                                                     {
                                                                                         item?.shipment_type == null && item?.container_type == null ?
-                                                                                            <> 
+                                                                                            <>
                                                                                                 <span className="badge bg-soft-danger text-danger me-2">Pandding</span>
-                                                                                             </>
+                                                                                            </>
                                                                                             :
                                                                                             <>
                                                                                                 <span className="badge bg-soft-warning text-warning me-2">{item?.vessel_name + " - " + item?.vessel_date}</span>
@@ -486,7 +496,7 @@ const LoadVehicleCreateForm = () => {
                                                                 <div className="row">
                                                                     {
                                                                         item?.movement_type === "shipment" ?
-                                                                            <p className="col-lg-4 col-4">N : {item.net_weight + "KG" }</p>
+                                                                            <p className="col-lg-4 col-4">N : {item.net_weight + "KG"}</p>
                                                                             :
                                                                             <>
                                                                                 <p className="col-lg-4 col-4">N : {item.net_weight + "KG"}</p>

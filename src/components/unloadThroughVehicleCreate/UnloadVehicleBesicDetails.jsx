@@ -12,6 +12,7 @@ import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import DataTable from "react-data-table-component";
 import ReactPaginate from "react-paginate";
+import { godown } from "@/api/Godown";
 
 const UnloadVehicleBesicDetails = () => {
     // select option states 
@@ -39,6 +40,7 @@ const UnloadVehicleBesicDetails = () => {
         party_id: "",
         supplier_id: "",
         cargo_id: "",
+        godown_id: "",
         movement_type: "",
         vehicle_no: "",
         driver_name: "",
@@ -82,8 +84,17 @@ const UnloadVehicleBesicDetails = () => {
     const filterPartyOption = async (inputValue) => {
         const response = await party(inputValue);
         const data = response.map((item) => {
-            return { value: item.id, label: item.trade_name };
+            return { value: item.id, label: (
+                <div>
+                    <span className="text-dark bold">{item.trade_name}</span>
+                    <br />
+                    <span className="text-muted" style={{ color: 'gray',fontStyle: "italic" }}>{item.city + " , " + item.state?.state_name}</span>
+                    <br />
+                    <p>{item.gst}</p>
+                </div>
+            ) };
         })
+        console.log(response);
         return data;
     };
     // party option function
@@ -132,6 +143,27 @@ const UnloadVehicleBesicDetails = () => {
         if (inputValue.length > 1) {
             return new Promise((resolve) => {
                 resolve(filterCargoOption(inputValue));
+            });
+        }
+        else {
+            return new Promise((resolve) => {
+                resolve([]);
+            });
+        }
+    }
+
+    // godown list state
+    const filterGodownOption = async (inputValue) => {
+        const response = await godown(inputValue);
+        const data = response.map((item) => {
+            return { value: item.id, label: item.godown_name };
+        })
+        return data;
+    };
+    const godownOption = (inputValue) => {
+        if (inputValue.length > 1) {
+            return new Promise((resolve) => {
+                resolve(filterGodownOption(inputValue));
             });
         }
         else {
@@ -559,6 +591,17 @@ const UnloadVehicleBesicDetails = () => {
                 </Modal.Header>
                 <Form onSubmit={handleFormSubmit}>
                     <Modal.Body>
+                        <div>
+                            <Form.Label>Godown Name</Form.Label>
+                            <AsyncSelect
+                                cacheOptions
+                                defaultOptions
+                                loadOptions={godownOption}
+                                name="party_id"
+                                isClearable={true}
+                                onChange={(opt) => setCreateVehicle({ ...createVehicle, godown_id: opt ? opt.value : "" })}
+                            />
+                        </div>
                         {
                             createVehicle?.movement_type == "vehicle" ?
                                 <div className="">
@@ -594,17 +637,17 @@ const UnloadVehicleBesicDetails = () => {
                         }
                         <div className="">
                             <Form.Label>Gross Weight</Form.Label>
-                            <Form.Control onChange={handleChange} value={formData.gross_weight} type="text" name="gross_weight" placeholder="Enter gross weight" />
+                            <Form.Control onChange={handleChange} type="text" name="gross_weight" placeholder="Enter gross weight" />
                             <span className="text-danger">{errorHandler.gross_weight ? errorHandler.gross_weight : ""}</span>
                         </div>
                         <div className="">
                             <Form.Label>Tare Weight</Form.Label>
-                            <Form.Control onChange={handleChange} value={formData.tare_weight} type="text" name="tare_weight" placeholder="Enter tare weight" />
+                            <Form.Control onChange={handleChange} type="text" name="tare_weight" placeholder="Enter tare weight" />
                             <span className="text-danger">{errorHandler.tare_weight ? errorHandler.tare_weight : ""}</span>
                         </div>
                         <div className="">
                             <Form.Label>Net Weight</Form.Label>
-                            <Form.Control onChange={handleChange} value={formData.net_weight} type="text" name="net_weight" placeholder="Enter net weight" />
+                            <Form.Control onChange={handleChange} type="text" name="net_weight" placeholder="Enter net weight" />
                             <span className="text-danger">{errorHandler.net_weight ? errorHandler.net_weight : ""}</span>
                         </div>
                     </Modal.Body>
@@ -612,7 +655,7 @@ const UnloadVehicleBesicDetails = () => {
                         <button className="btn btn-primary btn-sm p-2" type="submit">
                             Create
                         </button>
-                        <button className="btn btn-danger btn-sm p-2" onClick={handleClose}>
+                        <button type="button" className="btn btn-danger btn-sm p-2" onClick={handleClose}>
                             Close
                         </button>
                     </Modal.Footer>
