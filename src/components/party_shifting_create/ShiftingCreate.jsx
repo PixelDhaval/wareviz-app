@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Form, Placeholder,Button } from "react-bootstrap";
+import { Form, Placeholder, Button } from "react-bootstrap";
 import { FiList, FiPlus, FiTable } from "react-icons/fi";
 import Select from "react-select";
 import AsyncSelect from "react-select/async";
@@ -170,26 +170,61 @@ const ShiftingCreate = () => {
         }
     }
 
+    // cargo modal state
+    const [showCargoModal, setShowCargoModal] = useState(false);
+    const [newCargoCreate, setNewCargoCreate] = useState({
+        cargo_name: "",
+        brand_name: "",
+        rate: "",
+        unit: "",
+        description: "",
+    });
     // cargo option function
     const filterCargoOption = async (inputValue) => {
         const response = await cargo(inputValue);
         const data = response.map((item) => {
             return { value: item.id, label: item.cargo_name };
         })
+        if (data.length === 0) {
+            return [{ value: "create-new", label: `+ Create "${inputValue}"` }];
+        }
         return data;
     };
-    const cargoOption = (inputValue) => {
-        if (inputValue.length > 1) {
-            return new Promise((resolve) => {
-                resolve(filterCargoOption(inputValue));
+    const handleCargoChange = (opt) => {
+        if (opt?.value === "create-new") {
+            setShowCargoModal(true);
+        } else {
+            setFormData({
+                ...formData,
+                cargo_id: opt ? opt.value : "",
+                cargo_name: opt ? opt.label : "",
             });
+        }
+    };
+
+    // handel input change function
+    const handleCargoCreateChange = (e) => {
+        setNewCargoCreate({ ...newCargoCreate, [e.target.name]: e.target.value });
+    };
+    // handle form submit function
+    const handleCargoCreateSubmit = async (e) => {
+        e.preventDefault();
+        const response = await createCargo(newCargoCreate);
+        console.log(response);
+        if (response.status === 200) {
+            Swal.fire({
+                title: "Cargo created successfully",
+                icon: "success",
+                showConfirmButton: false,
+                timer: 800
+            })
+            setShowCargoModal(false)
         }
         else {
-            return new Promise((resolve) => {
-                resolve([]);
-            });
+            setErrorHandler(response.data?.errors);
         }
-    }
+    };
+
     // filter godown option function
     const filterGodownOption = async (inputValue) => {
         const response = await godown(inputValue);
@@ -350,13 +385,10 @@ const ShiftingCreate = () => {
                                         <AsyncSelect
                                             cacheOptions
                                             defaultOptions
-                                            loadOptions={cargoOption}
+                                            loadOptions={filterCargoOption}
                                             name="cargo_id"
                                             isClearable={true}
-                                            onChange={(opt) => {
-                                                setFormData({ ...formData, cargo_id: opt ? opt.value : "" })
-                                                setFilters({ ...filters, cargo_id: opt ? opt.value : "" })
-                                            }}
+                                            onChange={handleCargoChange}
                                         />
                                         <span className="text-danger">{errorHandler.cargo_id ? errorHandler.cargo_id : ""}</span>
                                     </div>
@@ -782,6 +814,76 @@ const ShiftingCreate = () => {
                     <Modal.Footer>
                         <button type="submit" className="btn btn-primary btn-md">Create</button>
                         <Button size="md" variant="danger" onClick={() => setShowPartyModal(false)}>
+                            Cancel
+                        </Button>
+                    </Modal.Footer>
+                </Form>
+            </Modal>
+
+
+            {/* Modal for Creating New Cargo */}
+            <Modal show={showCargoModal} onHide={() => setShowCargoModal(false)} size="xl">
+                <Modal.Header closeButton>
+                    <Modal.Title>Create New Cargo</Modal.Title>
+                </Modal.Header>
+                <Form onSubmit={handleCargoCreateSubmit}>
+                    <Modal.Body >
+                        <div className="row">
+                            <div className="form-group col-sm-12 col-lg-3 mb-3">
+                                <Form.Label htmlFor="cargo_name">Cargo Name</Form.Label>
+                                <input
+                                    onChange={handleCargoCreateChange}
+                                    type="text"
+                                    className="form-control"
+                                    name="cargo_name"
+                                    placeholder="Enter cargo name"
+                                />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-3 mb-3">
+                                <Form.Label htmlFor="brand_name">Brand Name</Form.Label>
+                                <input
+                                    onChange={handleCargoCreateChange}
+                                    type="text"
+                                    className="form-control"
+                                    name="brand_name"
+                                    placeholder="Enter brand name"
+                                />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-3 mb-3">
+                                <Form.Label htmlFor="rate">Rate</Form.Label>
+                                <input
+                                    onChange={handleCargoCreateChange}
+                                    type="text"
+                                    className="form-control"
+                                    name="rate"
+                                    placeholder="Enter rate"
+                                />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-3 mb-3">
+                                <Form.Label htmlFor="unit">Unit</Form.Label>
+                                <input
+                                    onChange={handleCargoCreateChange}
+                                    type="text"
+                                    className="form-control"
+                                    name="unit"
+                                    placeholder="Enter unit"
+                                />
+                            </div>
+                            <div className="form-group mb-3">
+                                <Form.Label htmlFor="description">Description</Form.Label>
+                                <textarea
+                                    onChange={handleCargoCreateChange}
+                                    name="description"
+                                    className="form-control"
+                                    rows="2"
+                                    placeholder="Enter description"
+                                ></textarea>
+                            </div>
+                        </div>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <button type="submit" className="btn btn-primary btn-md">Create</button>
+                        <Button size="md" variant="danger" onClick={() => setShowCargoModal(false)}>
                             Cancel
                         </Button>
                     </Modal.Footer>
