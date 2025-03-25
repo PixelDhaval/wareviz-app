@@ -281,9 +281,11 @@ const LoadVehicleCreateForm = () => {
                 <div className="row">
                     <div className="col-auto col-lg-4">
                         <div className="card">
+                            <div className="card-header">
+                                <h5 className="card-title">Basic Details</h5>
+                            </div>
                             <div className="card-body">
                                 <Form onSubmit={handleSubmit}>
-                                    <h5>Create Load Vehicle</h5>
                                     <div className="row">
                                         <div className="col-sm-12 col-lg-6">
                                             <label>Party Name</label>

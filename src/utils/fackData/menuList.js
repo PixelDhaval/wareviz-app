@@ -27,6 +27,13 @@ export const menuList = [
     },
     {
         id: 1,
+        name: "Opning Stock",
+        path: "/opningStock/list",
+        icon: "feather-shopping-cart",
+        dropdownMenu: []
+    },
+    {
+        id: 2,
         name:"Unload Vehicle",    
         path: "/unload/create",
         icon: "truck-loading",
@@ -35,7 +42,7 @@ export const menuList = [
         ]
     },
     {
-        id: 2,
+        id: 3,
         name:"Load Vehicle",    
         path: "/load/create",
         icon: "truck-unloading",
@@ -44,14 +51,14 @@ export const menuList = [
         ]
     },
     {
-        id: 3,
+        id: 4,
         name: "Party Shifting",
         path: "/shifting/create",
         icon: "feather-clock",
         dropdownMenu: []
     },
     {
-        id: 4,
+        id: 5,
         name: "Movement Report",
         path: "/report",
         icon: "movement report",

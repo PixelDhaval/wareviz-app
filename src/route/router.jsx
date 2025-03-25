@@ -28,6 +28,8 @@ import LoadVehicleView from "../pages/load-vehicle-view";
 import VehicleMovementReport from "../pages/vehicleMovementReport";
 import ShiftingReport from "../pages/shifting-report";
 import Report from "../pages/report";
+import OpningStockList from "../pages/opning-stock-list";
+import OpningStockEdit from "../pages/opning-stock-edit";
 
 export const router = createBrowserRouter([
     {
@@ -105,7 +107,15 @@ export const router = createBrowserRouter([
             {
                 path:"/report",
                 element: <Report />
-            }
+            },
+            {
+                path: "/opningStock/list",
+                element: <OpningStockList />
+            },
+            {
+                path: "/opningStock/view",
+                element: <OpningStockEdit />
+            },
         ]
     },
     {
@@ -115,27 +125,7 @@ export const router = createBrowserRouter([
             {
                 path: "/authentication/login/minimal",
                 element: <LoginMinimal />
-            },
-            {
-                path: "/authentication/register/minimal",
-                element: <RegisterMinimal />
-            },
-            {
-                path: "/authentication/reset/minimal",
-                element: <ResetMinimal />
-            },
-            {
-                path: "/authentication/404/minimal",
-                element: <ErrorMinimal />
-            },
-            {
-                path: "/authentication/verify/minimal",
-                element: <OtpMinimal />
-            },
-            {
-                path: "/authentication/maintenance/minimal",
-                element: <MaintenanceMinimal />
-            },
+            }
         ]
     }
 ])
