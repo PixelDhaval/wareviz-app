@@ -1,18 +1,19 @@
 import React, { act, useEffect, useState } from "react";
 import AsyncSelect from "react-select/async";
 import Select from "react-select";
-import { party } from "@/api/Party";
-import { cargo } from "@/api/Cargo";
+import { party, createParty } from "@/api/Party";
+import { cargo, createCargo } from "@/api/Cargo";
+import { godown, createGodown } from "@/api/Godown";
 import { FiEdit, FiList, FiPlus, FiTable, FiTerminal, FiTruck } from "react-icons/fi";
 import { MdDirectionsRailway } from "react-icons/md";
-import { Form, Placeholder, Modal } from "react-bootstrap";
+import { Form, Placeholder, Modal, Button } from "react-bootstrap";
 import { getAllVehicleMovements } from "@/api/VehicleMovements";
 import { createUnloadVehicle } from "@/api/VehicleMovements";
 import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import DataTable from "react-data-table-component";
 import ReactPaginate from "react-paginate";
-import { godown } from "@/api/Godown";
+import { getAllStates } from "@/api/State";
 
 const UnloadVehicleBesicDetails = () => {
     // select option states 
@@ -80,36 +81,91 @@ const UnloadVehicleBesicDetails = () => {
         fetchUnloadVehicles();
     }, []);
 
+    // state options
+    const [stateOptions, setStateOptions] = useState([]);
+    useEffect(() => {
+        const fetchState = async () => {
+            const response = await getAllStates();
+            setStateOptions(response);
+        }
+        fetchState();
+    }, []);
+
+    // create new party state
+    const [createPartyData, setCreatePartyData] = useState({
+        legal_name: "",
+        trade_name: "",
+        gst: "",
+        pan: "",
+        email: "",
+        phone: "",
+        address_line_1: "",
+        address_line_2: "",
+        state_id: "",
+        city: "",
+        pincode: "",
+        tax_type: "",
+        opening_balance: "",
+    })
+
     // filter option and selcet option functions start
     const filterPartyOption = async (inputValue) => {
         const response = await party(inputValue);
-        const data = response.map((item) => {
-            return { value: item.id, label: (
+        const data = response.map((item) => ({
+            value: item.id,
+            label: item.trade_name,
+            fullLabel: (
                 <div>
                     <span className="text-dark bold">{item.trade_name}</span>
                     <br />
-                    <span className="text-muted" style={{ color: 'gray',fontStyle: "italic" }}>{item.city + " , " + item.state?.state_name}</span>
+                    <span className="text-muted" style={{ color: 'gray', fontStyle: "italic" }}>
+                        {item.city}, {item.state?.state_name}
+                    </span>
                     <br />
                     <p>{item.gst}</p>
                 </div>
-            ) };
-        })
-        console.log(response);
+            ),
+        }));
+        if (data.length === 0) {
+            return [{ value: "create-new", label: `+ Create "${inputValue}"` }];
+        }
         return data;
     };
+    const [showPartyModal, setShowPartyModal] = useState(false);
     // party option function
-    const partyOption = (inputValue) => {
-        if (inputValue.length > 1) {
-            return new Promise((resolve) => {
-                resolve(filterPartyOption(inputValue));
+    const handlePartyChange = (opt) => {
+        if (opt?.value === "create-new") {
+            setShowPartyModal(true);
+        } else {
+            setFormData({
+                ...formData,
+                party_id: opt ? opt.value : "",
+                party_name: opt ? opt.label : "",
             });
         }
-        else {
-            return new Promise((resolve) => {
-                resolve([]);
-            });
+    };
+
+    // handle create party change
+    const handleCreatePartyChange = (e) => {
+        setCreatePartyData({ ...createPartyData, [e.target.name]: e.target.value })
+    }
+
+    // handle create party submit 
+    const handleCreatePartyForm = async (e) => {
+        e.preventDefault();
+        const response = await createParty(createPartyData);
+        console.log(response);
+        if (response.status === 200) {
+            Swal.fire({
+                title: "Cargo created successfully",
+                icon: "success",
+                showConfirmButton: false,
+                timer: 800
+            })
+            setShowPartyModal(false);
         }
     }
+
     // supplier option function
     const filterSupplierOption = async (inputValue) => {
         const response = await party(inputValue);
@@ -290,13 +346,12 @@ const UnloadVehicleBesicDetails = () => {
                                         <AsyncSelect
                                             cacheOptions
                                             defaultOptions
-                                            loadOptions={partyOption}
+                                            loadOptions={filterPartyOption}
                                             name="party_id"
+                                            getOptionLabel={(e) => e.fullLabel || e.label}
+                                            getOptionValue={(e) => e.value}
                                             isClearable={true}
-                                            onChange={(opt) => [
-                                                setFormData({ ...formData, party_id: opt ? opt.value : "" }),
-                                                setFilters({ ...filters, party_id: opt ? opt.value : "" })
-                                            ]}
+                                            onChange={handlePartyChange}
                                         />
                                         <span className="text-danger">{errorHandler.party_id ? errorHandler.party_id : ""}</span>
                                     </div>
@@ -661,6 +716,114 @@ const UnloadVehicleBesicDetails = () => {
                     </Modal.Footer>
                 </Form>
             </Modal >
+
+
+            {/* Modal for Creating New Party */}
+            <Modal show={showPartyModal} onHide={() => setShowPartyModal(false)} size="xl">
+                <Modal.Header closeButton>
+                    <Modal.Title>Create New Party</Modal.Title>
+                </Modal.Header>
+                <Form onSubmit={handleCreatePartyForm}>
+                    <Modal.Body>
+                        <div className="row">
+                            <div className="form-group col-sm-12 col-lg-3 mb-3">
+                                <Form.Label htmlFor="legal_name">Legal Name</Form.Label>
+                                <input
+                                    onChange={handleCreatePartyChange}
+                                    type="text" className="form-control" name="legal_name" placeholder="Enter legal name" />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-3 mb-3">
+                                <Form.Label htmlFor="trade_name">Trade Name</Form.Label>
+                                <input
+                                    onChange={handleCreatePartyChange}
+                                    type="text" className="form-control" name="trade_name" placeholder="Enter trade name" />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-3 mb-3">
+                                <Form.Label htmlFor="gst">GST</Form.Label>
+                                <input
+                                    onChange={handleCreatePartyChange}
+                                    type="text" className="form-control" name="gst" placeholder="Enter gst number" />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-3 mb-3">
+                                <Form.Label htmlFor="pan">Pan</Form.Label>
+                                <input
+                                    onChange={handleCreatePartyChange}
+                                    type="text" className="form-control" name="pan" placeholder="Enter pan number" />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-3 mb-3">
+                                <Form.Label htmlFor="email">Email</Form.Label>
+                                <input
+                                    onChange={handleCreatePartyChange}
+                                    type="text" className="form-control" name="email" placeholder="Enter email" />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-3 mb-3">
+                                <Form.Label htmlFor="phone">phone</Form.Label>
+                                <input
+                                    onChange={handleCreatePartyChange}
+                                    type="tel" className="form-control" name="phone" placeholder="Enter phone number" />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-3 mb-3">
+                                <Form.Label htmlFor="address_line_1">Address Line 1</Form.Label>
+                                <input
+                                    onChange={handleCreatePartyChange}
+                                    name="address_line_1" className="form-control" rows="1" placeholder="Enter address line 1" />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-3 mb-3">
+                                <Form.Label htmlFor="address_line_2">Address Line 2</Form.Label>
+                                <input
+                                    onChange={handleCreatePartyChange}
+                                    name="address_line_2" className="form-control" rows="1" placeholder="Enter address line 2" />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-3 mb-3">
+                                <Form.Label htmlFor="state_id">State</Form.Label>
+                                <Select
+                                    name='state_id'
+                                    options={
+                                        stateOptions.map(state => ({ value: state.id, label: state.state_name }))
+                                    }
+                                    onChange={(selectedOption) => setCreatePartyData({ ...createPartyData, state_id: selectedOption.value })}
+                                />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-3 mb-3">
+                                <Form.Label htmlFor="city">City</Form.Label>
+                                <input
+                                    onChange={handleCreatePartyChange}
+                                    type="text" className="form-control" name="city" placeholder="Enter city name" />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-3 mb-3">
+                                <Form.Label htmlFor="pincode">Pincode</Form.Label>
+                                <input
+                                    onChange={handleCreatePartyChange}
+                                    type="text" className="form-control" name="pincode" placeholder="Enter pincode number" />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-3 mb-3">
+                                <Form.Label htmlFor="tax_type">Tax type</Form.Label>
+                                <Select
+                                    onChange={(selectedOption) => setCreatePartyData({ ...createPartyData, tax_type: selectedOption.value })}
+                                    name="tax_type"
+                                    options={[
+                                        { value: 'reg', label: 'REG' },
+                                        { value: 'sez', label: 'SEZ' },
+                                        { value: 'com', label: 'COM' },
+                                    ]}
+                                />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-3 mb-3">
+                                <Form.Label htmlFor="opening_balance">Opening Balance</Form.Label>
+                                <input
+                                    onChange={handleCreatePartyChange}
+                                    type="text" className="form-control" name="opening_balance" placeholder="Enter opening Balance" />
+                            </div>
+                        </div>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <button type="submit" className="btn btn-primary btn-md">Create</button>
+                        <Button size="md" variant="danger" onClick={() => setShowPartyModal(false)}>
+                            Cancel
+                        </Button>
+                    </Modal.Footer>
+                </Form>
+            </Modal>
         </>
     )
 }
