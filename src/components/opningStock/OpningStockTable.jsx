@@ -759,7 +759,7 @@ const OpningStockTable = () => {
                 </Form>
             </Modal>
 
-            {/* Modal for Creating New Cargo */}
+            {/* Modal for Creating New godown */}
             <Modal show={showGodownModal} onHide={() => setShowGodownModal(false)} size="xl">
                 <Modal.Header closeButton>
                     <Modal.Title>Create New Godown</Modal.Title>

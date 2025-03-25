@@ -84,6 +84,8 @@ const LoadVehicleCreateForm = () => {
                 ...formData,
                 party_id: opt ? opt.value : "",
                 party_name: opt ? opt.label : "",
+                supplier_id: opt ? opt.value : "",
+                supplier_name: opt ? opt.label : "",
             });
         }
     };
@@ -185,26 +187,63 @@ const LoadVehicleCreateForm = () => {
         }
     };
 
-    // cargo list state
+    // show godown modal state
+    const [showGodownModal, setShowGodownModal] = useState(false);
+    // godown list state
     const filterGodownOption = async (inputValue) => {
         const response = await godown(inputValue);
         const data = response.map((item) => {
             return { value: item.id, label: item.godown_name };
         })
+        if (data.length === 0) {
+            return [{ value: "create-new", label: `+ Create "${inputValue}"` }];
+        }
+
         return data;
     };
-    const godownOption = (inputValue) => {
-        if (inputValue.length > 1) {
-            return new Promise((resolve) => {
-                resolve(filterGodownOption(inputValue));
-            });
-        }
-        else {
-            return new Promise((resolve) => {
-                resolve([]);
+    // handel input change function
+    const handleGodownChange = (opt) => {
+        if (opt?.value === "create-new") {
+            setShowGodownModal(true);
+        } else {
+            setFormData({
+                ...formData,
+                godown_id: opt ? opt.value : "",
+                godown_name: opt ? opt.label : "",
             });
         }
     }
+    const [newGodownCreate, setNewGodownCreate] = useState({
+        godown_name: "",
+        godown_no: "",
+        location: "",
+        latitude: "",
+        longitude: "",
+        capacity: "",
+        description: "",
+    });
+    // handel input change function
+    const handleGodownCreateChange = (e) => {
+        setNewGodownCreate({ ...newGodownCreate, [e.target.name]: e.target.value });
+    };
+    // handle form submit function
+    const handleCreateGodownSubmit = async (e) => {
+        e.preventDefault();
+        const response = await createGodown(newGodownCreate);
+        console.log(response);
+        if (response.status === 200) {
+            Swal.fire({
+                title: "Cargo created successfully",
+                icon: "success",
+                showConfirmButton: false,
+                timer: 800
+            })
+            setShowGodownModal(false)
+        }
+        else {
+            setErrorHandler(response.data?.errors);
+        }
+    };
 
     //load vehicle list state
     const [loadVehicleList, setLoadVehicleList] = React.useState([]);
@@ -395,18 +434,11 @@ const LoadVehicleCreateForm = () => {
                                             <AsyncSelect
                                                 cacheOptions
                                                 defaultOptions
-                                                loadOptions={supplierOption}
+                                                loadOptions={filterPartyOption}
                                                 name="supplier_id"
                                                 value={formData.supplier_id ? { value: formData.supplier_id, label: formData.supplier_name } : null}
                                                 isClearable={true}
-                                                onChange={(opt) => {
-                                                    setFormData({
-                                                        ...formData,
-                                                        supplier_id: opt ? opt.value : "",
-                                                        supplier_name: opt ? opt.label : "",
-                                                    })
-                                                    setFilter({ ...filter, supplier_id: opt ? opt.value : "" })
-                                                }}
+                                                onChange={handlePartyChange}
                                             />
                                             <span className="text-danger">{errorHandler.supplier_id ? errorHandler.supplier_id : ""}</span>
                                         </div>
@@ -728,16 +760,10 @@ const LoadVehicleCreateForm = () => {
                             <AsyncSelect
                                 cacheOptions
                                 defaultOptions
-                                loadOptions={godownOption}
+                                loadOptions={filterGodownOption}
                                 name="godown_id"
-                                onChange={(opt) =>
-                                    setFormData({
-                                        ...formData,
-                                        godown_id: opt.value,
-                                    },
-                                        setErrorHandler({ ...errorHandler, godown_id: opt.value })
-                                    )
-                                }
+                                isClearable={true}
+                                onChange={handleGodownChange}
                             />
                         </div>
                         {
@@ -1029,6 +1055,91 @@ const LoadVehicleCreateForm = () => {
                     <Modal.Footer>
                         <button type="submit" className="btn btn-primary btn-md">Create</button>
                         <Button size="md" variant="danger" onClick={() => setShowCargoModal(false)}>
+                            Cancel
+                        </Button>
+                    </Modal.Footer>
+                </Form>
+            </Modal>
+
+            {/* Modal for Creating New godown */}
+            <Modal show={showGodownModal} onHide={() => setShowGodownModal(false)} size="xl">
+                <Modal.Header closeButton>
+                    <Modal.Title>Create New Godown</Modal.Title>
+                </Modal.Header>
+                <Form onSubmit={handleCreateGodownSubmit}>
+                    <Modal.Body >
+                        <div className="row">
+                            <div className="form-group col-sm-12 col-lg-4 mb-3">
+                                <Form.Label htmlFor="godown_name">Godown Name</Form.Label>
+                                <input
+                                    onChange={handleGodownCreateChange}
+                                    type="text"
+                                    className="form-control"
+                                    name="godown_name"
+                                    placeholder="Enter godown name"
+                                />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-4 mb-3">
+                                <Form.Label htmlFor="godown_no">Godown No</Form.Label>
+                                <input
+                                    onChange={handleGodownCreateChange}
+                                    type="text"
+                                    className="form-control"
+                                    name="godown_no"
+                                    placeholder="Enter godown no"
+                                />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-4 mb-3">
+                                <Form.Label htmlFor="location">Location</Form.Label>
+                                <input
+                                    onChange={handleGodownCreateChange}
+                                    type="text"
+                                    className="form-control"
+                                    name="location"
+                                    placeholder="Enter location"
+                                />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-4 mb-3">
+                                <Form.Label htmlFor="latitude">Latitude</Form.Label>
+                                <input
+                                    onChange={handleGodownCreateChange}
+                                    type="text"
+                                    className="form-control"
+                                    name="latitude"
+                                    placeholder="Enter latitude"
+                                />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-4 mb-3">
+                                <Form.Label htmlFor="longitude">Longitude</Form.Label>
+                                <input
+                                    onChange={handleGodownCreateChange}
+                                    type="text"
+                                    className="form-control"
+                                    name="longitude"
+                                    placeholder="Enter longitude"
+                                />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-4 mb-3">
+                                <Form.Label htmlFor="capacity">Capacity</Form.Label>
+                                <input
+                                    onChange={handleGodownCreateChange}
+                                    type="number"
+                                    className="form-control"
+                                    name="capacity"
+                                    placeholder="Enter capacity"
+                                />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-12 mb-3">
+                                <Form.Label htmlFor="capacity">Descriptions</Form.Label>
+                                <textarea
+                                    onChange={handleGodownCreateChange}
+                                    name="description" className="form-control" rows="1" placeholder="Enter description"></textarea>
+                            </div>
+                        </div>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <button type="submit" className="btn btn-primary btn-md">Create</button>
+                        <Button size="md" variant="danger" onClick={() => setShowGodownModal(false)}>
                             Cancel
                         </Button>
                     </Modal.Footer>
