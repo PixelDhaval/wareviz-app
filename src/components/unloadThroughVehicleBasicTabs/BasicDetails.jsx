@@ -33,9 +33,6 @@ const BasicDetails = ({ viewVehicleList }) => {
         tare_weight: "",
         rr_date: "",
         rr_number: "",
-        gross_weight: "",
-        tare_weight: "",
-        net_weight: "",
         godown_id: ""
     });
 
