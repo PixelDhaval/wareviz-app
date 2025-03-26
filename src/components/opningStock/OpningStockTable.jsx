@@ -97,6 +97,17 @@ const OpningStockTable = () => {
             const options = response.map((item) => ({
                 value: item.id,
                 label: item.trade_name,
+                fullLabel: (
+                    <div>
+                        <span className="text-dark bold">{item.trade_name}</span>
+                        <br />
+                        <span className="text-muted" style={{ color: "gray", fontStyle: "italic" }}>
+                            {item.city}, {item.state?.state_name}
+                        </span>
+                        <br />
+                        <p>{item.gst}</p>
+                    </div>
+                ),
             }));
             if (options.length === 0) {
                 return [{ value: "create-new", label: `+ Create "${inputValue}"` }];
@@ -280,7 +291,6 @@ const OpningStockTable = () => {
         }
     };
 
-
     // form Data handler state
     const [formData, setFormData] = React.useState({
         party_id: "",
@@ -363,6 +373,7 @@ const OpningStockTable = () => {
                                             defaultOptions
                                             loadOptions={fetchPartyOptions}
                                             isClearable
+                                            getOptionLabel={(e) => e.fullLabel ?? e.label}
                                             name="party_id"
                                             onChange={handleChange}
                                             value={formData.party_id ? { value: formData.party_id, label: formData.party_name } : null}

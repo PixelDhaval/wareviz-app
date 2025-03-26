@@ -442,13 +442,12 @@ const UnloadVehicleBesicDetails = () => {
                                         <label>Party Name</label>
                                         <AsyncSelect
                                             cacheOptions
-                                            getOptionLabel={(e) => e.fullLabel || e.label}
-                                            getOptionValue={(e) => e.value || ""}
-                                            loadOptions={loadPartyOptions}
-                                            onChange={handlePartyChange}
-                                            placeholder="Select..."
                                             defaultOptions
-                                            isClearable={true}
+                                            loadOptions={loadPartyOptions}
+                                            isClearable
+                                            getOptionLabel={(e) => e.fullLabel ?? e.label}
+                                            name="party_id"
+                                            onChange={handlePartyChange}
                                         />
                                         <span className="text-danger">{errorHandler.party_id ? errorHandler.party_id : ""}</span>
                                     </div>
