@@ -109,11 +109,11 @@ export const router = createBrowserRouter([
                 element: <Report />
             },
             {
-                path: "/opningStock/list",
+                path: "/openingStock/list",
                 element: <OpningStockList />
             },
             {
-                path: "/opningStock/view",
+                path: "/openingStock/view",
                 element: <OpningStockEdit />
             },
         ]
@@ -123,7 +123,7 @@ export const router = createBrowserRouter([
         element: <LayoutAuth />,
         children: [
             {
-                path: "/authentication/login/minimal",
+                path: "/login",
                 element: <LoginMinimal />
             }
         ]

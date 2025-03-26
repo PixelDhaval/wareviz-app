@@ -27,8 +27,8 @@ export const menuList = [
     },
     {
         id: 1,
-        name: "Opning Stock",
-        path: "/opningStock/list",
+        name: "Opening Stock",
+        path: "/openingStock/list",
         icon: "feather-shopping-cart",
         dropdownMenu: []
     },
@@ -67,21 +67,8 @@ export const menuList = [
     {
         id: 10,
         name: "authentication",
-        path: "#",
+        path: "/login",
         icon: 'feather-power',
-        dropdownMenu: [
-            {
-                id: 1,
-                name: "login",
-                path: "#",
-                subdropdownMenu: [
-                    {
-                        id: 2,
-                        name: "Minimal",
-                        path: "/authentication/login/minimal",
-                    },
-                ]
-            },
-        ]
+        dropdownMenu: []
     }
 ]

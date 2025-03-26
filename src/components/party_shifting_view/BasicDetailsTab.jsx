@@ -154,9 +154,18 @@ const BasicDetailsTab = ({ shiftingDetails }) => {
                 icon: "success",
                 showConfirmButton: false,
                 timer: 800
-            })
+            });
+            setFormData({
+                ...formData,
+                party_id: response.data?.id,
+                party_name: response.data?.trade_name,
+            });
+            setRefMovementValue({
+                ...refMovementValue,
+                party_id: response.data?.id,
+                party_name: response.data?.trade_name,
+            });
             setShowModal(false);
-
         }
         else {
             setErrorHandler(response.data?.errors);
@@ -224,8 +233,18 @@ const BasicDetailsTab = ({ shiftingDetails }) => {
                 icon: "success",
                 showConfirmButton: false,
                 timer: 800
-            })
-            setShowGodownModal(false)
+            });
+            setFormData({
+                ...formData,
+                godown_id: response.data?.id,
+                godown_name: response.data?.godown_name,
+            });
+            setRefMovementValue({
+                ...refMovementValue,
+                godown_id: response.data?.id,
+                godown_name: response.data?.godown_name,
+            });
+            setShowGodownModal(false);
         }
         else {
             setErrorHandler(response.data?.errors);
@@ -311,7 +330,12 @@ const BasicDetailsTab = ({ shiftingDetails }) => {
                 icon: "success",
                 showConfirmButton: false,
                 timer: 800
-            })
+            });
+            setFormData({
+                ...formData,
+                cargo_id: response.data?.id,
+                cargo_name: response.data?.cargo_name,
+            });
             setShowCargoModal(false)
         }
         else {
@@ -490,6 +514,7 @@ const BasicDetailsTab = ({ shiftingDetails }) => {
                                                         isClearable
                                                         name="party_id"
                                                         onChange={handleChange}
+                                                        value={refMovementValue.party_id ? { value: refMovementValue.party_id, label: refMovementValue.party_name } : null}
                                                     />
                                                     <Button size="sm" className="my-2" variant="primary" type="submit">Shifting</Button>
                                                 </Form>
@@ -503,6 +528,7 @@ const BasicDetailsTab = ({ shiftingDetails }) => {
                                                         name="godown_id"
                                                         isClearable={true}
                                                         onChange={handleGodownChange}
+                                                        value={formData.godown_id ? { value: formData.godown_id, label: formData.godown_name } : null}
                                                     />
                                                     <Button size="sm" className="my-2" variant="primary" type="submit">Shifting</Button>
                                                 </Form>

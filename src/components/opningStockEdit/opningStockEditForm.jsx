@@ -171,8 +171,12 @@ const OpningStockEditForm = () => {
                 showConfirmButton: false,
                 timer: 800
             })
+            setFormData({
+                ...formData,
+                party_id: response.data?.id,
+                party_name: response.data?.trade_name,
+            })
             setShowModal(false);
-
         }
         else {
             setErrorHandler(response.data?.errors);
@@ -237,6 +241,11 @@ const OpningStockEditForm = () => {
                 icon: "success",
                 showConfirmButton: false,
                 timer: 800
+            })
+            setFormData({
+                ...formData,
+                cargo_id: response.data?.id,
+                cargo_name: response.data?.cargo_name,
             })
             setShowCargoModal(false)
         }
@@ -305,7 +314,12 @@ const OpningStockEditForm = () => {
                 icon: "success",
                 showConfirmButton: false,
                 timer: 800
-            })
+            });
+            setFormData({
+                ...formData,
+                godown_id: response.data?.id,
+                godown_name: response.data?.godown_name,
+            });
             setShowGodownModal(false)
         }
         else {
@@ -410,25 +424,25 @@ const OpningStockEditForm = () => {
                                                         <p className="mb-0 col-3 col-lg-3">
                                                             <span>Type : {cargoDetails.bags_type ? cargoDetails.bags_type :
                                                                 <>
-                                                                    <span className="badge bg-soft-danger text-danger me-2">Pandding</span>
+                                                                    <span className="badge bg-soft-danger text-danger me-2">pending</span>
                                                                 </>}</span>
                                                         </p>
                                                         <p className="mb-0 col-3 col-lg-3">
                                                             <span>Q : {cargoDetails.bags_qty ? cargoDetails.bags_qty :
                                                                 <>
-                                                                    <span className="badge bg-soft-danger text-danger me-2">Pandding</span>
+                                                                    <span className="badge bg-soft-danger text-danger me-2">pending</span>
                                                                 </>}</span>
                                                         </p>
                                                         <p className="mb-0 col-3 col-lg-3">
                                                             <span>W : {cargoDetails.bags_weight ? cargoDetails.bags_weight + "KG" :
                                                                 <>
-                                                                    <span className="badge bg-soft-danger text-danger me-2">Pandding</span>
+                                                                    <span className="badge bg-soft-danger text-danger me-2">pending</span>
                                                                 </>}</span>
                                                         </p>
                                                         <p className="mb-0 col-3 col-lg-3">
                                                             <span>T : {cargoDetails.total_weight ? cargoDetails.total_weight + "KG" :
                                                                 <>
-                                                                    <span className="badge bg-soft-danger text-danger me-2">Pandding</span>
+                                                                    <span className="badge bg-soft-danger text-danger me-2">pending</span>
                                                                 </>}</span>
                                                         </p>
                                                     </>
@@ -527,12 +541,12 @@ const OpningStockEditForm = () => {
                                         />
                                     </div>
                                     <div className="col-sm-12 col-lg-6 mb-2">
-                                        <Form.Label>Opning Stock Date</Form.Label>
+                                        <Form.Label>Opening Stock Date</Form.Label>
                                         <Form.Control
                                             onChange={(e) => setFormData({ ...formData, movement_at: e.target.value })}
                                             type="date"
                                             name="movement_at"
-                                            placeholder="Enter Opning Stock Date"
+                                            placeholder="Enter Opening Stock Date"
                                             className="p-2"
                                             value={formData.movement_at}
                                         />

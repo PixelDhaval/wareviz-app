@@ -156,7 +156,12 @@ const ShiftingCreate = () => {
                 icon: "success",
                 showConfirmButton: false,
                 timer: 800
-            })
+            });
+            setFormData({
+                ...formData,
+                party_id: response.data?.id,
+                party_name: response.data?.trade_name,
+            });
             setShowPartyModal(false);
         }
     }
@@ -240,7 +245,12 @@ const ShiftingCreate = () => {
                 icon: "success",
                 showConfirmButton: false,
                 timer: 800
-            })
+            });
+            setFormData({
+                ...formData,
+                cargo_id: response.data?.id,
+                cargo_name: response.data?.cargo_name,
+            });
             setShowCargoModal(false)
         }
         else {
@@ -298,8 +308,13 @@ const ShiftingCreate = () => {
                 icon: "success",
                 showConfirmButton: false,
                 timer: 800
-            })
-            setShowGodownModal(false)
+            });
+            setFormData({
+                ...formData,
+                godown_id: response.data?.id,
+                godown_name: response.data?.godown_name,
+            });
+            setShowGodownModal(false);
         }
         else {
             setErrorHandler(response.data?.errors);
@@ -420,6 +435,7 @@ const ShiftingCreate = () => {
                                             getOptionValue={(e) => e.value}
                                             isClearable={true}
                                             onChange={handlePartyChange}
+                                            value={formData.party_id ? { value: formData.party_id, label: formData.party_name } : null}
                                         />
                                         <span className="text-danger">{errorHandler.party_id ? errorHandler.party_id : ""}</span>
                                     </div>
@@ -434,6 +450,7 @@ const ShiftingCreate = () => {
                                             getOptionValue={(e) => e.value}
                                             isClearable={true}
                                             onChange={handlePartyChange}
+                                            value={formData.supplier_id ? { value: formData.supplier_id, label: formData.supplier_name } : null}
                                         />
                                         <span className="text-danger">{errorHandler.supplier_id ? errorHandler.supplier_id : ""}</span>
                                     </div>
@@ -449,6 +466,7 @@ const ShiftingCreate = () => {
                                             name="cargo_id"
                                             isClearable={true}
                                             onChange={handleCargoChange}
+                                            value={formData.cargo_id ? { value: formData.cargo_id, label: formData.cargo_name } : null}
                                         />
                                         <span className="text-danger">{errorHandler.cargo_id ? errorHandler.cargo_id : ""}</span>
                                     </div>
@@ -750,6 +768,7 @@ const ShiftingCreate = () => {
                                 name="godown_id"
                                 isClearable={true}
                                 onChange={handleGodownChange}
+                                value={formData.godown_id ? { value: formData.godown_id, label: formData.godown_name } : null}
                             />
                         </div>
                     </Modal.Body>

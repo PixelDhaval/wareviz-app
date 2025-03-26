@@ -110,6 +110,11 @@ const BasicDetails = ({ viewVehicleList }) => {
                 showConfirmButton: false,
                 timer: 800
             })
+            setFormData({
+                ...formData,
+                godown_id: response.data?.id,
+                godown_name: response.data?.godown_name,
+            });
             setShowGodownModal(false)
         }
         else {
@@ -251,6 +256,7 @@ const BasicDetails = ({ viewVehicleList }) => {
                                 name="godown_id"
                                 isClearable={true}
                                 onChange={handleGodownChange}
+                                value={formData.godown_id ? { value: formData.godown_id, label: formData.godown_name } : null}
                             />
                         </div>
                         <div className="">

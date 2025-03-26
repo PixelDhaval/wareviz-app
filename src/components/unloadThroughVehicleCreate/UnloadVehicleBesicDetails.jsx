@@ -148,6 +148,7 @@ const UnloadVehicleBesicDetails = () => {
     const [showPartyModal, setShowPartyModal] = useState(false);
     // Handle selection change
     const handlePartyChange = (selectedOption) => {
+        console.log(selectedOption);
         if (selectedOption?.value === "create-new") {
             setShowPartyModal(true);
         } else {
@@ -177,6 +178,11 @@ const UnloadVehicleBesicDetails = () => {
                 icon: "success",
                 showConfirmButton: false,
                 timer: 800
+            })
+            setFormData({
+                ...formData,
+                party_id: response.data?.id,
+                party_name: response.data?.trade_name,
             })
             setShowPartyModal(false);
         }
@@ -241,7 +247,11 @@ const UnloadVehicleBesicDetails = () => {
         if (selectedOption?.value === "create-new") {
             setShowCargoModal(true);
         } else {
-            console.log("Selected Cargo:", selectedOption);
+            setFormData({
+                ...formData,
+                cargo_id: selectedOption?.value || "",
+                cargo_name: selectedOption?.label || "",
+            });
         }
     };
 
@@ -260,8 +270,13 @@ const UnloadVehicleBesicDetails = () => {
                 icon: "success",
                 showConfirmButton: false,
                 timer: 800
-            })
-            setShowCargoModal(false)
+            });
+            setFormData({
+                ...formData,
+                cargo_id: response.data?.id,
+                cargo_name: response.data?.cargo_name,
+            });
+            setShowCargoModal(false);
         }
         else {
             setErrorHandler(response.data?.errors);
@@ -318,8 +333,13 @@ const UnloadVehicleBesicDetails = () => {
                 icon: "success",
                 showConfirmButton: false,
                 timer: 800
-            })
-            setShowGodownModal(false)
+            });
+            setFormData({
+                ...formData,
+                godown_id: response.data?.id,
+                godown_name: response.data?.godown_name,
+            });
+            setShowGodownModal(false);
         }
         else {
             setErrorHandler(response.data?.errors);
@@ -331,6 +351,7 @@ const UnloadVehicleBesicDetails = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        console.log(formData);
         setFilters(formData);
         if (formData.party_id != '' && formData.supplier_id != '' && formData.cargo_id != '' && formData.movement_type != '') {
             setCreateVehicle(formData);
@@ -448,6 +469,7 @@ const UnloadVehicleBesicDetails = () => {
                                             getOptionLabel={(e) => e.fullLabel ?? e.label}
                                             name="party_id"
                                             onChange={handlePartyChange}
+                                            value={formData.party_id ? { value: formData.party_id, label: formData.party_name } : null}
                                         />
                                         <span className="text-danger">{errorHandler.party_id ? errorHandler.party_id : ""}</span>
                                     </div>
@@ -461,6 +483,7 @@ const UnloadVehicleBesicDetails = () => {
                                             name="supplier_id"
                                             isClearable={true}
                                             onChange={handlePartyChange}
+                                            value={formData.supplier_id ? { value: formData.supplier_id, label: formData.supplier_name } : null}
                                         />
                                         <span className="text-danger">{errorHandler.supplier_id ? errorHandler.supplier_id : ""}</span>
                                     </div>
@@ -476,6 +499,7 @@ const UnloadVehicleBesicDetails = () => {
                                             placeholder="Select cargo"
                                             defaultOptions
                                             isClearable={true}
+                                            value={formData.cargo_id ? { value: formData.cargo_id, label: formData.cargo_name } : null}
                                         />
                                         <span className="text-danger">{errorHandler.cargo_id ? errorHandler.cargo_id : ""}</span>
                                     </div>

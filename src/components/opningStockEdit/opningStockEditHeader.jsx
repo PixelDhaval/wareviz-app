@@ -4,7 +4,7 @@ const OpningStockEditHeader = () => {
     return (
         <>
             <div className="card-header">
-                <h3 className="card-title">Edit Opning Stock</h3>
+                <h3 className="card-title">Edit Opening Stock</h3>
             </div>
         </>
     )

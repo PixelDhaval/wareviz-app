@@ -149,8 +149,12 @@ const OpningStockTable = () => {
                 showConfirmButton: false,
                 timer: 800
             })
+            setFormData({
+                ...formData,
+                party_id: response.data?.id,
+                party_name: response.data?.trade_name,
+            })
             setShowModal(false);
-
         }
         else {
             setErrorHandler(response.data?.errors);
@@ -215,6 +219,11 @@ const OpningStockTable = () => {
                 icon: "success",
                 showConfirmButton: false,
                 timer: 800
+            })
+            setFormData({
+                ...formData,
+                cargo_id: response.data?.id,
+                cargo_name: response.data?.cargo_name,
             })
             setShowCargoModal(false)
         }
@@ -283,7 +292,12 @@ const OpningStockTable = () => {
                 icon: "success",
                 showConfirmButton: false,
                 timer: 800
-            })
+            });
+            setFormData({
+                ...formData,
+                godown_id: response.data?.id,
+                godown_name: response.data?.godown_name,
+            });
             setShowGodownModal(false)
         }
         else {
@@ -314,7 +328,7 @@ const OpningStockTable = () => {
         e.preventDefault();
         const response = await createUnloadVehicle(formData);
         if (response.status === 200) {
-            Swal.fire("Success", "Opning Stock added successfully", "success");
+            Swal.fire("Success", "Opening Stock added successfully", "success");
             setFilter({
                 ...filter,
                 party_id: "",
@@ -326,8 +340,10 @@ const OpningStockTable = () => {
             setFormData({
                 ...formData,
                 party_id: "",
-                supplier_id: "",
+                godown_id: "",
                 cargo_id: "",
+                movement_at: "",
+                net_weight: "",
                 movement_type: "opening_stock",
                 type: "unload"
             });
@@ -348,7 +364,7 @@ const OpningStockTable = () => {
 
     const data = tableData.map(item => ({
         movement_at: item.movement_at,
-        party: <Link to={`/opningStock/view?id=${item.id}`}>{item.party?.trade_name}</Link>,
+        party: <Link to={`/openingStock/view?id=${item.id}`}>{item.party?.trade_name}</Link>,
         godown: item.godown,
         cargo: item.cargo,
         movement_type: item.movement_type,
@@ -389,6 +405,7 @@ const OpningStockTable = () => {
                                             name="godown_id"
                                             isClearable={true}
                                             onChange={handleGodownChange}
+                                            value={formData.godown_id ? { value: formData.godown_id, label: formData.godown_name } : null}
                                         />
                                     </div>
                                     <div className="col-sm-12 col-lg-6">
@@ -400,17 +417,19 @@ const OpningStockTable = () => {
                                             name="cargo_id"
                                             isClearable={true}
                                             onChange={handleCargoChange}
+                                            value={formData.cargo_id ? { value: formData.cargo_id, label: formData.cargo_name } : null}
                                         />
                                         <span className="text-danger">{errorHandler.cargo_id ? errorHandler.cargo_id : ""}</span>
                                     </div>
                                     <div className="col-sm-12 col-lg-6 mb-2">
-                                        <Form.Label>Opning Stock Date</Form.Label>
+                                        <Form.Label>Opening Stock Date</Form.Label>
                                         <Form.Control
                                             onChange={(e) => setFormData({ ...formData, movement_at: e.target.value })}
                                             type="date"
                                             name="movement_at"
-                                            placeholder="Enter Opning Stock Date"
+                                            placeholder="Enter Opening Stock Date"
                                             className="p-2"
+                                            value={formData.movement_at ? formData.movement_at : ""}
                                         />
                                     </div>
                                     <div className="col-sm-12 col-lg-6 mb-2">
@@ -421,6 +440,7 @@ const OpningStockTable = () => {
                                             name="net_weight"
                                             placeholder="Enter Net Weight"
                                             className="p-2"
+                                            value={formData.net_weight ? formData.net_weight : ""}
                                         />
                                     </div>
                                 </div>
@@ -476,7 +496,7 @@ const OpningStockTable = () => {
                                                                 </div>
                                                                 <hr className="m-1" />
                                                                 <div>
-                                                                    <Link to={`/opningStock/view?id=${item.id}`} className="mb-0">{item.party?.trade_name}</Link>
+                                                                    <Link to={`/openingStock/view?id=${item.id}`} className="mb-0">{item.party?.trade_name}</Link>
                                                                     <p className="mb-0 text-muted">{item.cargo?.cargo_name}</p>
                                                                 </div>
                                                                 <hr className="m-1" />

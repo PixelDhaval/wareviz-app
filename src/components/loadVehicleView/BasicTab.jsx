@@ -112,7 +112,12 @@ const BasicTab = ({ loadingDetails }) => {
                 icon: "success",
                 showConfirmButton: false,
                 timer: 800
-            })
+            });
+            setFormData({
+                ...formData,
+                godown_id: response.data?.id,
+                godown_name: response.data?.godown_name,
+            });
             setShowGodownModal(false)
         }
         else {
