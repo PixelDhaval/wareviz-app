@@ -109,40 +109,54 @@ const UnloadVehicleBesicDetails = () => {
     })
 
     // filter option and selcet option functions start
-    const filterPartyOption = async (inputValue) => {
-        const response = await party(inputValue);
-        const data = response.map((item) => ({
-            value: item.id,
-            label: item.trade_name,
-            fullLabel: (
-                <div>
-                    <span className="text-dark bold">{item.trade_name}</span>
-                    <br />
-                    <span className="text-muted" style={{ color: 'gray', fontStyle: "italic" }}>
-                        {item.city}, {item.state?.state_name}
-                    </span>
-                    <br />
-                    <p>{item.gst}</p>
-                </div>
-            ),
-        }));
-        if (data.length === 0) {
-            return [{ value: "create-new", label: `+ Create "${inputValue}"` }];
+    const loadPartyOptions = async (inputValue) => {
+        if (!inputValue) return [];
+
+        try {
+            const response = await party(inputValue); // Fetch party data
+            if (!response || !Array.isArray(response)) {
+                console.error("Invalid response:", response);
+                return [];
+            }
+
+            const options = response.map((item) => ({
+                value: item.id,
+                label: item.trade_name,
+                fullLabel: (
+                    <div>
+                        <span className="text-dark bold">{item.trade_name}</span>
+                        <br />
+                        <span className="text-muted" style={{ color: "gray", fontStyle: "italic" }}>
+                            {item.city}, {item.state?.state_name}
+                        </span>
+                        <br />
+                        <small>{item.gst}</small>
+                    </div>
+                ),
+            }));
+
+            if (options.length === 0) {
+                return [{ value: "create-new", label: `+ Create "${inputValue}"` }];
+            }
+
+            return options;
+        } catch (error) {
+            console.error("Error fetching party options:", error);
+            return [];
         }
-        return data;
     };
     const [showPartyModal, setShowPartyModal] = useState(false);
-    // party option function
-    const handlePartyChange = (opt) => {
-        if (opt?.value === "create-new") {
+    // Handle selection change
+    const handlePartyChange = (selectedOption) => {
+        if (selectedOption?.value === "create-new") {
             setShowPartyModal(true);
         } else {
             setFormData({
                 ...formData,
-                party_id: opt ? opt.value : "",
-                party_name: opt ? opt.label : "",
-                supplier_id: opt ? opt.value : "",
-                supplier_name: opt ? opt.label : "",
+                party_id: selectedOption?.value || "",
+                party_name: selectedOption?.label || "",
+                supplier_id: selectedOption?.value || "",
+                supplier_name: selectedOption?.label || "",
             });
         }
     };
@@ -199,25 +213,35 @@ const UnloadVehicleBesicDetails = () => {
         description: "",
     });
     // cargo option function
-    const filterCargoOption = async (inputValue) => {
-        const response = await cargo(inputValue);
-        const data = response.map((item) => {
-            return { value: item.id, label: item.cargo_name };
-        })
-        if (data.length === 0) {
-            return [{ value: "create-new", label: `+ Create "${inputValue}"` }];
+    const loadCargoOptions = async (inputValue) => {
+        if (!inputValue) return [];
+
+        try {
+            const response = await cargo(inputValue);
+            if (!response || !Array.isArray(response)) return [];
+
+            const options = response.map((item) => ({
+                value: item.id,
+                label: item.cargo_name,
+            }));
+
+            if (options.length === 0) {
+                return [{ value: "create-new", label: `+ Create "${inputValue}"` }];
+            }
+
+            return options;
+        } catch (error) {
+            console.error("Error fetching cargo options:", error);
+            return [];
         }
-        return data;
     };
-    const handleCargoChange = (opt) => {
-        if (opt?.value === "create-new") {
+
+    // Handle selection change
+    const handleCargoChange = (selectedOption) => {
+        if (selectedOption?.value === "create-new") {
             setShowCargoModal(true);
         } else {
-            setFormData({
-                ...formData,
-                cargo_id: opt ? opt.value : "",
-                cargo_name: opt ? opt.label : "",
-            });
+            console.log("Selected Cargo:", selectedOption);
         }
     };
 
@@ -418,13 +442,13 @@ const UnloadVehicleBesicDetails = () => {
                                         <label>Party Name</label>
                                         <AsyncSelect
                                             cacheOptions
-                                            defaultOptions
-                                            loadOptions={filterPartyOption}
-                                            name="party_id"
                                             getOptionLabel={(e) => e.fullLabel || e.label}
-                                            getOptionValue={(e) => e.value}
-                                            isClearable={true}
+                                            getOptionValue={(e) => e.value || ""}
+                                            loadOptions={loadPartyOptions}
                                             onChange={handlePartyChange}
+                                            placeholder="Select..."
+                                            defaultOptions
+                                            isClearable={true}
                                         />
                                         <span className="text-danger">{errorHandler.party_id ? errorHandler.party_id : ""}</span>
                                     </div>
@@ -433,7 +457,8 @@ const UnloadVehicleBesicDetails = () => {
                                         <AsyncSelect
                                             cacheOptions
                                             defaultOptions
-                                            loadOptions={filterPartyOption}
+                                            getOptionLabel={(e) => e.fullLabel || e.label}
+                                            loadOptions={loadPartyOptions}
                                             name="supplier_id"
                                             isClearable={true}
                                             onChange={handlePartyChange}
@@ -447,11 +472,11 @@ const UnloadVehicleBesicDetails = () => {
                                         <label>Cargo</label>
                                         <AsyncSelect
                                             cacheOptions
-                                            defaultOptions
-                                            loadOptions={filterCargoOption}
-                                            name="cargo_id"
-                                            isClearable={true}
+                                            loadOptions={loadCargoOptions}
                                             onChange={handleCargoChange}
+                                            placeholder="Select cargo"
+                                            defaultOptions
+                                            isClearable={true}
                                         />
                                         <span className="text-danger">{errorHandler.cargo_id ? errorHandler.cargo_id : ""}</span>
                                     </div>

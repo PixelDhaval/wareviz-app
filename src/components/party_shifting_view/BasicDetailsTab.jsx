@@ -2,12 +2,14 @@ import React, { useEffect, useState } from "react";
 import { Form, Placeholder, Button, Modal } from "react-bootstrap";
 import { FiEdit } from "react-icons/fi";
 import AsyncSelect from "react-select/async";
-import { godown } from "@/api/Godown";
-import { party } from "@/api/Party";
-import { cargo } from "@/api/Cargo";
+import { godown, createGodown } from "@/api/Godown";
+import { party, createParty } from "@/api/Party";
+import { cargo, createCargo } from "@/api/Cargo";
 import { createUnloadVehicle, updateVehicle } from "@/api/VehicleMovements";
 import Swal from "sweetalert2";
 import DatePicker from "react-datepicker";
+import Select from "react-select";
+import { getAllStates } from "@/api/State";
 
 const BasicDetailsTab = ({ shiftingDetails }) => {
     const [basicDetails, setBasicDetails] = React.useState([]);
@@ -72,57 +74,164 @@ const BasicDetailsTab = ({ shiftingDetails }) => {
         })
     }, [shiftingDetails]);
 
-    // party option function
-    const filterPartyOption = async (inputValue) => {
-        const response = await party(inputValue);
-        const data = response.map((item) => {
-            return {
-                value: item.id, label: (
-                    <div>
-                        <span className="text-dark bold">{item.trade_name}</span>
-                        <br />
-                        <span className="text-muted" style={{ color: 'gray', fontStyle: "italic" }}>{item.city + " , " + item.state?.state_name}</span>
-                        <br />
-                        <p>{item.gst}</p>
-                    </div>
-                )
-            };
-        })
-        return data;
+    // filter party option state
+    const [showModal, setShowModal] = useState(false);
+    // create new party state
+    const [createPartyData, setCreatePartyData] = useState({
+        legal_name: "",
+        trade_name: "",
+        gst: "",
+        pan: "",
+        email: "",
+        phone: "",
+        address_line_1: "",
+        address_line_2: "",
+        state_id: "",
+        city: "",
+        pincode: "",
+        tax_type: "",
+        opening_balance: "",
+    })
+    // state options
+    const [stateOptions, setStateOptions] = useState([]);
+    useEffect(() => {
+        const fetchState = async () => {
+            const response = await getAllStates();
+            setStateOptions(response);
+        }
+        fetchState();
+    }, []);
+
+    // Fetch options from API
+    const fetchPartyOptions = async (inputValue) => {
+        if (!inputValue) return [];
+        try {
+            const response = await party(inputValue); // Fetch party data
+            if (!response || !Array.isArray(response)) {
+                console.error("Invalid response:", response);
+                return [];
+            }
+            const options = response.map((item) => ({
+                value: item.id,
+                label: item.trade_name,
+            }));
+            if (options.length === 0) {
+                return [{ value: "create-new", label: `+ Create "${inputValue}"` }];
+            }
+            return options;
+        } catch (error) {
+            console.error("Error fetching party options:", error);
+            return [];
+        }
     };
-    // party option function
-    const partyOption = (inputValue) => {
-        if (inputValue.length > 1) {
-            return new Promise((resolve) => {
-                resolve(filterPartyOption(inputValue));
+
+    // Handle selection
+    const handleChange = (opt) => {
+        if (opt?.value === "create-new") {
+            setShowModal(true);
+        } else {
+            setFormData({
+                ...formData,
+                party_id: opt ? opt.value : "",
+                party_name: opt ? opt.label : "",
             });
+        }
+    };
+
+    // handle create party change
+    const handleCreatePartyChange = (e) => {
+        setCreatePartyData({ ...createPartyData, [e.target.name]: e.target.value })
+    }
+
+    // handle create party submit 
+    const handleCreatePartyForm = async (e) => {
+        e.preventDefault();
+        const response = await createParty(createPartyData);
+        console.log(response);
+        if (response.status === 200) {
+            Swal.fire({
+                title: "Cargo created successfully",
+                icon: "success",
+                showConfirmButton: false,
+                timer: 800
+            })
+            setShowModal(false);
+
         }
         else {
-            return new Promise((resolve) => {
-                resolve([]);
-            });
+            setErrorHandler(response.data?.errors);
         }
     }
-    //godown option function
+
+
+    // show godown modal state
+    const [showGodownModal, setShowGodownModal] = useState(false);
+    // godown list state
     const filterGodownOption = async (inputValue) => {
-        const response = await godown(inputValue);
-        const data = response.map((item) => {
-            return { value: item.id, label: item.godown_name };
-        })
-        return data;
-    };
-    const godownOption = (inputValue) => {
-        if (inputValue.length > 1) {
-            return new Promise((resolve) => {
-                resolve(filterGodownOption(inputValue));
-            });
+        if (!inputValue) return [];
+        try {
+            const response = await godown(inputValue); // Fetch godown data
+            if (!response || !Array.isArray(response)) {
+                console.error("Invalid response:", response);
+                return [];
+            }
+            const options = response.map((item) => ({
+                value: item.id,
+                label: item.godown_name,
+            }));
+            if (options.length === 0) {
+                return [{ value: "create-new", label: `+ Create "${inputValue}"` }];
+            }
+            return options;
+        } catch (error) {
+            console.error("Error fetching godown options:", error);
+            return [];
         }
-        else {
-            return new Promise((resolve) => {
-                resolve([]);
+    };
+    // handel input change function
+    const handleGodownChange = (opt) => {
+        if (opt?.value === "create-new") {
+            setShowGodownModal(true);
+        } else {
+            setFormData({
+                ...formData,
+                godown_id: opt ? opt.value : "",
+                godown_name: opt ? opt.label : "",
             });
         }
     }
+    const [newGodownCreate, setNewGodownCreate] = useState({
+        godown_name: "",
+        godown_no: "",
+        location: "",
+        latitude: "",
+        longitude: "",
+        capacity: "",
+        description: "",
+    });
+    // handel input change function
+    const handleGodownCreateChange = (e) => {
+        setNewGodownCreate({ ...newGodownCreate, [e.target.name]: e.target.value });
+    };
+    // handle form submit function
+    const handleCreateGodownSubmit = async (e) => {
+        e.preventDefault();
+        const response = await createGodown(newGodownCreate);
+        console.log(response);
+        if (response.status === 200) {
+            Swal.fire({
+                title: "Cargo created successfully",
+                icon: "success",
+                showConfirmButton: false,
+                timer: 800
+            })
+            setShowGodownModal(false)
+        }
+        else {
+            setErrorHandler(response.data?.errors);
+        }
+    };
+
     // supplier option function
     const filterSupplierOption = async (inputValue) => {
         const response = await party(inputValue);
@@ -144,26 +253,71 @@ const BasicDetailsTab = ({ shiftingDetails }) => {
         }
     }
 
+    // cargo modal state
+    const [showCargoModal, setShowCargoModal] = useState(false);
+    const [newCargoCreate, setNewCargoCreate] = useState({
+        cargo_name: "",
+        brand_name: "",
+        rate: "",
+        unit: "",
+        description: "",
+    });
     // cargo option function
     const filterCargoOption = async (inputValue) => {
-        const response = await cargo(inputValue);
-        const data = response.map((item) => {
-            return { value: item.id, label: item.cargo_name };
-        })
-        return data;
+        if (!inputValue) return [];
+        try {
+            const response = await cargo(inputValue); // Fetch cargo data
+            if (!response || !Array.isArray(response)) {
+                console.error("Invalid response:", response);
+                return [];
+            }
+            const options = response.map((item) => ({
+                value: item.id,
+                label: item.cargo_name,
+            }));
+            if (options.length === 0) {
+                return [{ value: "create-new", label: `+ Create "${inputValue}"` }];
+            }
+            return options;
+        } catch (error) {
+            console.error("Error fetching cargo options:", error);
+            return [];
+        }
     };
-    const cargoOption = (inputValue) => {
-        if (inputValue.length > 1) {
-            return new Promise((resolve) => {
-                resolve(filterCargoOption(inputValue));
+    const handleCargoChange = (opt) => {
+        if (opt?.value === "create-new") {
+            setShowCargoModal(true);
+        } else {
+            setFormData({
+                ...formData,
+                cargo_id: opt ? opt.value : "",
+                cargo_name: opt ? opt.label : "",
             });
+        }
+    };
+
+    // handel input change function
+    const handleCargoCreateChange = (e) => {
+        setNewCargoCreate({ ...newCargoCreate, [e.target.name]: e.target.value });
+    };
+    // handle form submit function
+    const handleCargoCreateSubmit = async (e) => {
+        e.preventDefault();
+        const response = await createCargo(newCargoCreate);
+        console.log(response);
+        if (response.status === 200) {
+            Swal.fire({
+                title: "Cargo created successfully",
+                icon: "success",
+                showConfirmButton: false,
+                timer: 800
+            })
+            setShowCargoModal(false)
         }
         else {
-            return new Promise((resolve) => {
-                resolve([]);
-            });
+            setErrorHandler(response.data?.errors);
         }
-    }
+    };
 
     // handle to shifting change 
     const handleSubmit = async (e) => {
@@ -332,19 +486,10 @@ const BasicDetailsTab = ({ shiftingDetails }) => {
                                                     <AsyncSelect
                                                         cacheOptions
                                                         defaultOptions
-                                                        loadOptions={partyOption}
+                                                        loadOptions={fetchPartyOptions}
+                                                        isClearable
                                                         name="party_id"
-                                                        onChange={(opt) => setFormData({
-                                                            ...formData,
-                                                            ref_movement_id: basicDetails.id,
-                                                            party_id: opt.value ?? basicDetails.party?.id,
-                                                            supplier_id: basicDetails.supplier?.id,
-                                                            cargo_id: basicDetails.cargo?.id,
-                                                            movement_type: basicDetails.movement_type,
-                                                            godown_id: basicDetails.godown?.id,
-                                                            type: "unload",
-                                                            movement_at: basicDetails.movement_at
-                                                        })}
+                                                        onChange={handleChange}
                                                     />
                                                     <Button size="sm" className="my-2" variant="primary" type="submit">Shifting</Button>
                                                 </Form>
@@ -354,19 +499,10 @@ const BasicDetailsTab = ({ shiftingDetails }) => {
                                                     <AsyncSelect
                                                         cacheOptions
                                                         defaultOptions
-                                                        loadOptions={godownOption}
+                                                        loadOptions={filterGodownOption}
                                                         name="godown_id"
-                                                        onChange={(opt) => setFormData({
-                                                            ...formData,
-                                                            ref_movement_id: basicDetails.id,
-                                                            party_id: basicDetails.party?.id,
-                                                            supplier_id: basicDetails.supplier?.id,
-                                                            cargo_id: basicDetails.cargo?.id,
-                                                            movement_type: basicDetails.movement_type,
-                                                            godown_id: opt.value,
-                                                            type: "unload",
-                                                            movement_at: basicDetails.movement_at
-                                                        })}
+                                                        isClearable={true}
+                                                        onChange={handleGodownChange}
                                                     />
                                                     <Button size="sm" className="my-2" variant="primary" type="submit">Shifting</Button>
                                                 </Form>
@@ -382,16 +518,11 @@ const BasicDetailsTab = ({ shiftingDetails }) => {
                                                                     <AsyncSelect
                                                                         cacheOptions
                                                                         defaultOptions
-                                                                        loadOptions={partyOption}
+                                                                        loadOptions={fetchPartyOptions}
+                                                                        isClearable
                                                                         name="party_id"
-                                                                        onChange={(opt) => setRefMovementValue({
-                                                                            ...refMovementValue,
-                                                                            id: refMovementValue.id,
-                                                                            party_id: opt.value ?? refMovementValue.party_id,
-                                                                            party_name: opt.label ?? refMovementValue.party_name,
-                                                                            type: "unload"
-                                                                        })}
-                                                                        value={{ value: refMovementValue.party_id, label: refMovementValue.party_name }}
+                                                                        onChange={handleChange}
+                                                                        value={refMovementValue.party_id ? { value: refMovementValue.party_id, label: refMovementValue.party_name } : null}
                                                                     />
                                                                     <Button size="sm" className="my-2" variant="primary" type="submit">update</Button>
                                                                     <Button size="sm" className="my-2" variant="danger" type="button" onClick={(e) => setRefFlag(false)} >Cancel</Button>
@@ -402,16 +533,11 @@ const BasicDetailsTab = ({ shiftingDetails }) => {
                                                                     <AsyncSelect
                                                                         cacheOptions
                                                                         defaultOptions
-                                                                        loadOptions={godownOption}
+                                                                        loadOptions={filterGodownOption}
                                                                         name="godown_id"
-                                                                        onChange={(opt) => setRefMovementValue({
-                                                                            ...refMovementValue,
-                                                                            id: refMovementValue.id,
-                                                                            godown_id: opt.value ?? refMovementValue.godown_id,
-                                                                            godown_name: opt.label ?? refMovementValue.godown_name,
-                                                                            type: "unload"
-                                                                        })}
-                                                                        value={{ value: refMovementValue.godown_id, label: refMovementValue.godown_name }}
+                                                                        isClearable={true}
+                                                                        onChange={handleGodownChange}
+                                                                        value={refMovementValue.godown_id ? { value: refMovementValue.godown_id, label: refMovementValue.godown_name } : null}
                                                                     />
                                                                     <Button size="sm" className="my-2" variant="primary" type="submit">Update</Button>
                                                                     <Button size="sm" className="my-2" variant="danger" type="button" onClick={(e) => setRefFlag(false)} >Cancel</Button>
@@ -474,16 +600,11 @@ const BasicDetailsTab = ({ shiftingDetails }) => {
                             <AsyncSelect
                                 cacheOptions
                                 defaultOptions
-                                loadOptions={partyOption}
+                                loadOptions={fetchPartyOptions}
+                                isClearable
                                 name="party_id"
-                                onChange={(opt) =>
-                                    setFormData({
-                                        ...formData,
-                                        party_id: opt.value,
-                                        party_name: opt.label,
-                                    }
-                                    )}
-                                value={{ value: formData.party_id, label: formData?.party_name }}
+                                onChange={handleChange}
+                                value={{ value: formData.party_id, label: formData.party_name }}
                             />
                         </div>
                         <div className="">
@@ -491,15 +612,11 @@ const BasicDetailsTab = ({ shiftingDetails }) => {
                             <AsyncSelect
                                 cacheOptions
                                 defaultOptions
-                                loadOptions={supplierOption}
+                                getOptionLabel={(e) => e.fullLabel || e.label}
+                                loadOptions={fetchPartyOptions}
                                 name="supplier_id"
-                                onChange={(opt) =>
-                                    setFormData({
-                                        ...formData,
-                                        supplier_id: opt.value,
-                                        supplier_name: opt.label
-                                    }
-                                    )}
+                                isClearable={true}
+                                onChange={handleChange}
                                 value={{ value: formData.supplier_id, label: formData.supplier_name }}
                             />
                         </div>
@@ -508,15 +625,10 @@ const BasicDetailsTab = ({ shiftingDetails }) => {
                             <AsyncSelect
                                 cacheOptions
                                 defaultOptions
-                                loadOptions={cargoOption}
+                                loadOptions={filterCargoOption}
                                 name="cargo_id"
-                                onChange={(opt) =>
-                                    setFormData({
-                                        ...formData,
-                                        cargo_id: opt.value,
-                                        cargo_name: opt.label,
-                                    }
-                                    )}
+                                isClearable={true}
+                                onChange={handleCargoChange}
                                 value={{ value: formData.cargo_id, label: formData.cargo_name }}
                             />
                         </div>
@@ -525,14 +637,11 @@ const BasicDetailsTab = ({ shiftingDetails }) => {
                             <AsyncSelect
                                 cacheOptions
                                 defaultOptions
-                                loadOptions={godownOption}
+                                loadOptions={filterGodownOption}
                                 name="godown_id"
-                                onChange={(opt) => setFormData({
-                                    ...formData,
-                                    godown_id: opt.value,
-                                    godown_name: opt.label,
-                                })}
-                                value={{ value: formData.godown_id, label: formData.godown_name }}
+                                isClearable={true}
+                                onChange={handleGodownChange}
+                                value={formData.godown_id ? { value: formData.godown_id, label: formData.godown_name } : null}
                             />
                         </div>
                         <div>
@@ -550,6 +659,267 @@ const BasicDetailsTab = ({ shiftingDetails }) => {
                     </Modal.Footer>
                 </Form>
             </Modal >
+
+            {/* Modal for Creating New godown */}
+            <Modal show={showGodownModal} onHide={() => setShowGodownModal(false)} size="xl">
+                <Modal.Header closeButton>
+                    <Modal.Title>Create New Godown</Modal.Title>
+                </Modal.Header>
+                <Form onSubmit={handleCreateGodownSubmit}>
+                    <Modal.Body >
+                        <div className="row">
+                            <div className="form-group col-sm-12 col-lg-4 mb-3">
+                                <Form.Label htmlFor="godown_name">Godown Name</Form.Label>
+                                <input
+                                    onChange={handleGodownCreateChange}
+                                    type="text"
+                                    className="form-control"
+                                    name="godown_name"
+                                    placeholder="Enter godown name"
+                                />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-4 mb-3">
+                                <Form.Label htmlFor="godown_no">Godown No</Form.Label>
+                                <input
+                                    onChange={handleGodownCreateChange}
+                                    type="text"
+                                    className="form-control"
+                                    name="godown_no"
+                                    placeholder="Enter godown no"
+                                />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-4 mb-3">
+                                <Form.Label htmlFor="location">Location</Form.Label>
+                                <input
+                                    onChange={handleGodownCreateChange}
+                                    type="text"
+                                    className="form-control"
+                                    name="location"
+                                    placeholder="Enter location"
+                                />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-4 mb-3">
+                                <Form.Label htmlFor="latitude">Latitude</Form.Label>
+                                <input
+                                    onChange={handleGodownCreateChange}
+                                    type="text"
+                                    className="form-control"
+                                    name="latitude"
+                                    placeholder="Enter latitude"
+                                />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-4 mb-3">
+                                <Form.Label htmlFor="longitude">Longitude</Form.Label>
+                                <input
+                                    onChange={handleGodownCreateChange}
+                                    type="text"
+                                    className="form-control"
+                                    name="longitude"
+                                    placeholder="Enter longitude"
+                                />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-4 mb-3">
+                                <Form.Label htmlFor="capacity">Capacity</Form.Label>
+                                <input
+                                    onChange={handleGodownCreateChange}
+                                    type="number"
+                                    className="form-control"
+                                    name="capacity"
+                                    placeholder="Enter capacity"
+                                />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-12 mb-3">
+                                <Form.Label htmlFor="capacity">Descriptions</Form.Label>
+                                <textarea
+                                    onChange={handleGodownCreateChange}
+                                    name="description" className="form-control" rows="1" placeholder="Enter description"></textarea>
+                            </div>
+                        </div>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <button type="submit" className="btn btn-primary btn-md">Create</button>
+                        <Button size="md" variant="danger" onClick={() => setShowGodownModal(false)}>
+                            Cancel
+                        </Button>
+                    </Modal.Footer>
+                </Form>
+            </Modal>
+
+            {/* Modal for Creating New Party */}
+            <Modal show={showModal} onHide={() => setShowCargoModal(false)} size="xl">
+                <Modal.Header closeButton>
+                    <Modal.Title>Create New Party</Modal.Title>
+                </Modal.Header>
+                <Form onSubmit={handleCreatePartyForm}>
+                    <Modal.Body>
+                        <div className="row">
+                            <div className="form-group col-sm-12 col-lg-3 mb-3">
+                                <Form.Label htmlFor="legal_name">Legal Name</Form.Label>
+                                <input
+                                    onChange={handleCreatePartyChange}
+                                    type="text" className="form-control" name="legal_name" placeholder="Enter legal name" />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-3 mb-3">
+                                <Form.Label htmlFor="trade_name">Trade Name</Form.Label>
+                                <input
+                                    onChange={handleCreatePartyChange}
+                                    type="text" className="form-control" name="trade_name" placeholder="Enter trade name" />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-3 mb-3">
+                                <Form.Label htmlFor="gst">GST</Form.Label>
+                                <input
+                                    onChange={handleCreatePartyChange}
+                                    type="text" className="form-control" name="gst" placeholder="Enter gst number" />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-3 mb-3">
+                                <Form.Label htmlFor="pan">Pan</Form.Label>
+                                <input
+                                    onChange={handleCreatePartyChange}
+                                    type="text" className="form-control" name="pan" placeholder="Enter pan number" />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-3 mb-3">
+                                <Form.Label htmlFor="email">Email</Form.Label>
+                                <input
+                                    onChange={handleCreatePartyChange}
+                                    type="text" className="form-control" name="email" placeholder="Enter email" />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-3 mb-3">
+                                <Form.Label htmlFor="phone">phone</Form.Label>
+                                <input
+                                    onChange={handleCreatePartyChange}
+                                    type="tel" className="form-control" name="phone" placeholder="Enter phone number" />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-3 mb-3">
+                                <Form.Label htmlFor="address_line_1">Address Line 1</Form.Label>
+                                <input
+                                    onChange={handleCreatePartyChange}
+                                    name="address_line_1" className="form-control" rows="1" placeholder="Enter address line 1" />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-3 mb-3">
+                                <Form.Label htmlFor="address_line_2">Address Line 2</Form.Label>
+                                <input
+                                    onChange={handleCreatePartyChange}
+                                    name="address_line_2" className="form-control" rows="1" placeholder="Enter address line 2" />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-3 mb-3">
+                                <Form.Label htmlFor="state_id">State</Form.Label>
+                                <Select
+                                    name='state_id'
+                                    options={
+                                        stateOptions.map(state => ({ value: state.id, label: state.state_name }))
+                                    }
+                                    onChange={(selectedOption) => setCreatePartyData({ ...createPartyData, state_id: selectedOption.value })}
+                                />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-3 mb-3">
+                                <Form.Label htmlFor="city">City</Form.Label>
+                                <input
+                                    onChange={handleCreatePartyChange}
+                                    type="text" className="form-control" name="city" placeholder="Enter city name" />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-3 mb-3">
+                                <Form.Label htmlFor="pincode">Pincode</Form.Label>
+                                <input
+                                    onChange={handleCreatePartyChange}
+                                    type="text" className="form-control" name="pincode" placeholder="Enter pincode number" />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-3 mb-3">
+                                <Form.Label htmlFor="tax_type">Tax type</Form.Label>
+                                <Select
+                                    onChange={(selectedOption) => setCreatePartyData({ ...createPartyData, tax_type: selectedOption.value })}
+                                    name="tax_type"
+                                    options={[
+                                        { value: 'reg', label: 'REG' },
+                                        { value: 'sez', label: 'SEZ' },
+                                        { value: 'com', label: 'COM' },
+                                    ]}
+                                />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-3 mb-3">
+                                <Form.Label htmlFor="opening_balance">Opening Balance</Form.Label>
+                                <input
+                                    onChange={handleCreatePartyChange}
+                                    type="text" className="form-control" name="opening_balance" placeholder="Enter opening Balance" />
+                            </div>
+                        </div>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <button type="submit" className="btn btn-primary btn-md">Create</button>
+                        <Button size="md" variant="danger" onClick={() => setShowModal(false)}>
+                            Cancel
+                        </Button>
+                    </Modal.Footer>
+                </Form>
+            </Modal>
+
+            {/* Modal for Creating New Cargo */}
+            <Modal show={showCargoModal} onHide={() => setShowCargoModal(false)} size="xl">
+                <Modal.Header closeButton>
+                    <Modal.Title>Create New Cargo</Modal.Title>
+                </Modal.Header>
+                <Form onSubmit={handleCargoCreateSubmit}>
+                    <Modal.Body >
+                        <div className="row">
+                            <div className="form-group col-sm-12 col-lg-3 mb-3">
+                                <Form.Label htmlFor="cargo_name">Cargo Name</Form.Label>
+                                <input
+                                    onChange={handleCargoCreateChange}
+                                    type="text"
+                                    className="form-control"
+                                    name="cargo_name"
+                                    placeholder="Enter cargo name"
+                                />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-3 mb-3">
+                                <Form.Label htmlFor="brand_name">Brand Name</Form.Label>
+                                <input
+                                    onChange={handleCargoCreateChange}
+                                    type="text"
+                                    className="form-control"
+                                    name="brand_name"
+                                    placeholder="Enter brand name"
+                                />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-3 mb-3">
+                                <Form.Label htmlFor="rate">Rate</Form.Label>
+                                <input
+                                    onChange={handleCargoCreateChange}
+                                    type="text"
+                                    className="form-control"
+                                    name="rate"
+                                    placeholder="Enter rate"
+                                />
+                            </div>
+                            <div className="form-group col-sm-12 col-lg-3 mb-3">
+                                <Form.Label htmlFor="unit">Unit</Form.Label>
+                                <input
+                                    onChange={handleCargoCreateChange}
+                                    type="text"
+                                    className="form-control"
+                                    name="unit"
+                                    placeholder="Enter unit"
+                                />
+                            </div>
+                            <div className="form-group mb-3">
+                                <Form.Label htmlFor="description">Description</Form.Label>
+                                <textarea
+                                    onChange={handleCargoCreateChange}
+                                    name="description"
+                                    className="form-control"
+                                    rows="2"
+                                    placeholder="Enter description"
+                                ></textarea>
+                            </div>
+                        </div>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <button type="submit" className="btn btn-primary btn-md">Create</button>
+                        <Button size="md" variant="danger" onClick={() => setShowCargoModal(false)}>
+                            Cancel
+                        </Button>
+                    </Modal.Footer>
+                </Form>
+            </Modal>
         </>
     )
 }

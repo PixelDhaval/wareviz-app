@@ -45,7 +45,6 @@ const GodownCreate = () => {
         }
         setErrorHandler({ ...errorHandler, ...response.data?.errors });
     };
-    console.log(errorHandler);
 
     return (
         <>

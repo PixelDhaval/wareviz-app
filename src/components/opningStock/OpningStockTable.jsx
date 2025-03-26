@@ -4,7 +4,7 @@ import AsyncSelect from "react-select/async";
 import Select from "react-select";
 import { party, createParty } from "@/api/Party";
 import { cargo, createCargo } from "@/api/Cargo";
-import { godown , createGodown} from "@/api/Godown";
+import { godown, createGodown } from "@/api/Godown";
 import { getAllStates } from '@/api/State';
 import { getAllVehicleMovements, createUnloadVehicle } from "@/api/VehicleMovements";
 import Swal from "sweetalert2";
@@ -17,23 +17,6 @@ const OpningStockTable = () => {
     // dataTable state
     const [tableData, setTableData] = React.useState([]);
     const [isLoading, setIsLoading] = React.useState(false);
-
-    // create new party state
-    const [createPartyData, setCreatePartyData] = useState({
-        legal_name: "",
-        trade_name: "",
-        gst: "",
-        pan: "",
-        email: "",
-        phone: "",
-        address_line_1: "",
-        address_line_2: "",
-        state_id: "",
-        city: "",
-        pincode: "",
-        tax_type: "",
-        opening_balance: "",
-    })
 
     // filter state 
     const [filter, setFilter] = useState({
@@ -75,30 +58,59 @@ const OpningStockTable = () => {
 
     // filter option and selcet option functions start
     // filter party option state
-    const [showModal, setShowModal] = useState(false); // Modal state
-    const [newPartyName, setNewPartyName] = useState(""); // New party name
+    const [showModal, setShowModal] = useState(false);
+    // create new party state
+    const [createPartyData, setCreatePartyData] = useState({
+        legal_name: "",
+        trade_name: "",
+        gst: "",
+        pan: "",
+        email: "",
+        phone: "",
+        address_line_1: "",
+        address_line_2: "",
+        state_id: "",
+        city: "",
+        pincode: "",
+        tax_type: "",
+        opening_balance: "",
+    })
+    // state options
+    const [stateOptions, setStateOptions] = useState([]);
+    useEffect(() => {
+        const fetchState = async () => {
+            const response = await getAllStates();
+            setStateOptions(response);
+        }
+        fetchState();
+    }, []);
 
     // Fetch options from API
     const fetchPartyOptions = async (inputValue) => {
-        if (!inputValue || inputValue.length < 2) return [];
-
-        const response = await party(inputValue); // API call
-        const options = response.map((item) => ({
-            value: item.id,
-            label: item.trade_name,
-        }));
-
-        // If no matching data, show "Create New" option
-        if (options.length === 0) {
-            return [{ value: "create-new", label: `+ Create "${inputValue}"` }];
+        if (!inputValue) return [];
+        try {
+            const response = await party(inputValue); // Fetch party data
+            if (!response || !Array.isArray(response)) {
+                console.error("Invalid response:", response);
+                return [];
+            }
+            const options = response.map((item) => ({
+                value: item.id,
+                label: item.trade_name,
+            }));
+            if (options.length === 0) {
+                return [{ value: "create-new", label: `+ Create "${inputValue}"` }];
+            }
+            return options;
+        } catch (error) {
+            console.error("Error fetching party options:", error);
+            return [];
         }
-        return options;
     };
 
     // Handle selection
     const handleChange = (opt) => {
         if (opt?.value === "create-new") {
-            setNewPartyName(opt.label.replace("+ Create ", "").replace(/"/g, ""));
             setShowModal(true);
         } else {
             setFormData({
@@ -108,6 +120,31 @@ const OpningStockTable = () => {
             });
         }
     };
+
+    // handle create party change
+    const handleCreatePartyChange = (e) => {
+        setCreatePartyData({ ...createPartyData, [e.target.name]: e.target.value })
+    }
+
+    // handle create party submit 
+    const handleCreatePartyForm = async (e) => {
+        e.preventDefault();
+        const response = await createParty(createPartyData);
+        console.log(response);
+        if (response.status === 200) {
+            Swal.fire({
+                title: "Cargo created successfully",
+                icon: "success",
+                showConfirmButton: false,
+                timer: 800
+            })
+            setShowModal(false);
+
+        }
+        else {
+            setErrorHandler(response.data?.errors);
+        }
+    }
 
     // cargo modal state
     const [showCargoModal, setShowCargoModal] = useState(false);
@@ -120,18 +157,28 @@ const OpningStockTable = () => {
     });
     // cargo option function
     const filterCargoOption = async (inputValue) => {
-        const response = await cargo(inputValue);
-        const data = response.map((item) => {
-            return { value: item.id, label: item.cargo_name };
-        })
-        if (data.length === 0) {
-            return [{ value: "create-new", label: `+ Create "${inputValue}"` }];
+        if (!inputValue) return [];
+        try {
+            const response = await cargo(inputValue); // Fetch cargo data
+            if (!response || !Array.isArray(response)) {
+                console.error("Invalid response:", response);
+                return [];
+            }
+            const options = response.map((item) => ({
+                value: item.id,
+                label: item.cargo_name,
+            }));
+            if (options.length === 0) {
+                return [{ value: "create-new", label: `+ Create "${inputValue}"` }];
+            }
+            return options;
+        } catch (error) {
+            console.error("Error fetching cargo options:", error);
+            return [];
         }
-        return data;
     };
     const handleCargoChange = (opt) => {
         if (opt?.value === "create-new") {
-            setNewPartyName(opt.label.replace("+ Create ", "").replace(/"/g, ""));
             setShowCargoModal(true);
         } else {
             setFormData({
@@ -169,15 +216,25 @@ const OpningStockTable = () => {
     const [showGodownModal, setShowGodownModal] = useState(false);
     // godown list state
     const filterGodownOption = async (inputValue) => {
-        const response = await godown(inputValue);
-        const data = response.map((item) => {
-            return { value: item.id, label: item.godown_name };
-        })
-        if (data.length === 0) {
-            return [{ value: "create-new", label: `+ Create "${inputValue}"` }];
+        if (!inputValue) return [];
+        try {
+            const response = await godown(inputValue); // Fetch godown data
+            if (!response || !Array.isArray(response)) {
+                console.error("Invalid response:", response);
+                return [];
+            }
+            const options = response.map((item) => ({
+                value: item.id,
+                label: item.godown_name,
+            }));
+            if (options.length === 0) {
+                return [{ value: "create-new", label: `+ Create "${inputValue}"` }];
+            }
+            return options;
+        } catch (error) {
+            console.error("Error fetching godown options:", error);
+            return [];
         }
-
-        return data;
     };
     // handel input change function
     const handleGodownChange = (opt) => {
@@ -268,42 +325,6 @@ const OpningStockTable = () => {
             Swal.fire("Error", response.data?.message, "error");
         }
     }
-
-    // state options
-    const [stateOptions, setStateOptions] = useState([]);
-    useEffect(() => {
-        const fetchState = async () => {
-            const response = await getAllStates();
-            setStateOptions(response);
-        }
-        fetchState();
-    }, []);
-
-    // handle create party change
-    const handleCreatePartyChange = (e) => {
-        setCreatePartyData({ ...createPartyData, [e.target.name]: e.target.value })
-    }
-
-    // handle create party submit 
-    const handleCreatePartyForm = async (e) => {
-        e.preventDefault();
-        const response = await createParty(createPartyData);
-        console.log(response);
-        if (response.status === 200) {
-            Swal.fire({
-                title: "Cargo created successfully",
-                icon: "success",
-                showConfirmButton: false,
-                timer: 800
-            })
-            setShowModal(false);
-
-        }
-        else {
-            setErrorHandler(response.data?.errors);
-        }
-    }
-
 
     // data table columns state
     const columns = [

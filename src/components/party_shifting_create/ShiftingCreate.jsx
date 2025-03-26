@@ -93,26 +93,36 @@ const ShiftingCreate = () => {
 
     // filter option and selcet option functions start
     const filterPartyOption = async (inputValue) => {
-        const response = await party(inputValue);
-        const data = response.map((item) => ({
-            value: item.id,
-            label: item.trade_name,
-            fullLabel: (
-                <div>
-                    <span className="text-dark bold">{item.trade_name}</span>
-                    <br />
-                    <span className="text-muted" style={{ color: 'gray', fontStyle: "italic" }}>
-                        {item.city}, {item.state?.state_name}
-                    </span>
-                    <br />
-                    <p>{item.gst}</p>
-                </div>
-            ),
-        }));
-        if (data.length === 0) {
-            return [{ value: "create-new", label: `+ Create "${inputValue}"` }];
+        if (!inputValue) return [];
+        try {
+            const response = await party(inputValue); // Fetch party data
+            if (!response || !Array.isArray(response)) {
+                console.error("Invalid response:", response);
+                return [];
+            }
+            const options = response.map((item) => ({
+                value: item.id,
+                label: item.trade_name,
+                fullLabel: (
+                    <div>
+                        <span className="text-dark bold">{item.trade_name}</span>
+                        <br />
+                        <span className="text-muted" style={{ color: "gray", fontStyle: "italic" }}>
+                            {item.city}, {item.state?.state_name}
+                        </span>
+                        <br />
+                        <p>{item.gst}</p>
+                    </div>
+                ),
+            }));
+            if (options.length === 0) {
+                return [{ value: "create-new", label: `+ Create "${inputValue}"` }];
+            }
+            return options;
+        } catch (error) {
+            console.error("Error fetching party options:", error);
+            return [];
         }
-        return data;
     };
     const [showPartyModal, setShowPartyModal] = useState(false);
     // party option function
@@ -183,14 +193,25 @@ const ShiftingCreate = () => {
     });
     // cargo option function
     const filterCargoOption = async (inputValue) => {
-        const response = await cargo(inputValue);
-        const data = response.map((item) => {
-            return { value: item.id, label: item.cargo_name };
-        })
-        if (data.length === 0) {
-            return [{ value: "create-new", label: `+ Create "${inputValue}"` }];
+        if(!inputValue) return [];
+        try {
+            const response = await cargo(inputValue); // Fetch cargo data
+            if (!response || !Array.isArray(response)) {
+                console.error("Invalid response:", response);
+                return [];
+            }
+            const options = response.map((item) => ({
+                value: item.id,
+                label: item.cargo_name,
+            }));
+            if (options.length === 0) {
+                return [{ value: "create-new", label: `+ Create "${inputValue}"` }];
+            }
+            return options;
+        }   catch (error) {
+            console.error("Error fetching cargo options:", error);
+            return [];
         }
-        return data;
     };
     const handleCargoChange = (opt) => {
         if (opt?.value === "create-new") {
