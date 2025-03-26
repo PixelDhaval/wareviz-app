@@ -3,11 +3,6 @@ import RootLayout from "../layout/root";
 import Home from "../pages/home";
 import LayoutAuth from "../layout/layoutAuth";
 import LoginMinimal from "../pages/login-minimal";
-import RegisterMinimal from "../pages/register-minimal";
-import ResetMinimal from "../pages/reset-minimal";
-import ErrorMinimal from "../pages/error-minimal";
-import OtpMinimal from "../pages/otp-minimal";
-import MaintenanceMinimal from "../pages/maintenance-minimal";
 import PartiesListPage from "../pages/Parties-list";
 import PartiesCreatePage from "../pages/Parties-create";
 import PartiesEditPage from "../pages/Parties-edit";
@@ -17,7 +12,6 @@ import CargoEditPage from "../pages/cargo-edit";
 import GodownListPage from "../pages/godown-list";
 import GodownCreatePage from "../pages/godown-create";
 import GodownEditPage from "../pages/godown-edit";
-import UnloadVehicleList from "../pages/unload-vehicle-list";
 import UnloadThroughVehicleCreate from "../pages/unload-through-vehicle-create";
 import UnloadThroughVehicleTabs from "../pages/unloadThroughVehicleTabs";
 import PartyShiftingList from "../pages/party-shifting-list";
@@ -25,11 +19,10 @@ import PartyShiftingCreate from "../pages/party-shifting-create";
 import PartyShiftingView from "../pages/party-shifting-view";
 import LoadVehicleCreate from "../pages/load-vehicle-create";
 import LoadVehicleView from "../pages/load-vehicle-view";
-import VehicleMovementReport from "../pages/vehicleMovementReport";
-import ShiftingReport from "../pages/shifting-report";
 import Report from "../pages/report";
 import OpningStockList from "../pages/opning-stock-list";
 import OpningStockEdit from "../pages/opning-stock-edit";
+import PartiesView from "../pages/parties-view";
 
 export const router = createBrowserRouter([
     {
@@ -47,6 +40,10 @@ export const router = createBrowserRouter([
             {
                 path: "/parties/create",
                 element: <PartiesCreatePage />
+            },
+            {
+                path: "/parties/view",
+                element: <PartiesView />
             },
             {
                 path: "/parties/edit",

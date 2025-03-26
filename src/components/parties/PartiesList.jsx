@@ -133,7 +133,7 @@ const PartiesList = () => {
 
     const data = partiesList?.map(item =>
     ({
-        trade_name: <Link to={`/parties/edit?id=${item.id}`}>{item.trade_name}</Link>,
+        trade_name: <Link to={`/parties/view?id=${item.id}`}>{item.trade_name}</Link>,
         party: item.party,
         gst: <span className="badge bg-soft-primary text-primary">{item.gst}</span>,
         email: <>{item.email}<br />{item.phone}</>,
