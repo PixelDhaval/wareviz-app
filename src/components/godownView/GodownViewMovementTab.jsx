@@ -1,64 +1,62 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Button, Form } from "react-bootstrap";
-import { FiFilter } from "react-icons/fi";
-import Select from "react-select";
+import React, { useState, useEffect, useRef } from "react";
 import { getAllVehicleMovements } from "@/api/VehicleMovements";
-import DataTable from "react-data-table-component";
+import { Form, Button } from "react-bootstrap";
 import { MdDownloading } from "react-icons/md";
+import Select from "react-select";
 import { AgGridReact } from "ag-grid-react";
 import { AllCommunityModule, ModuleRegistry, themeAlpine, themeBalham, themeMaterial, themeQuartz } from 'ag-grid-community';
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-const PartiesViewMovement = () => {
+const GodownViewMovementTab = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const id = urlParams.get("id");
 
     // view Details card state
     const [viewDetails, setViewDetails] = React.useState([]);
+    const [isLoading, setIsLoading] = React.useState(false);
 
-    // filter value state 
+    // filter value state
     const [filter, setfilter] = React.useState({
-        party_id: id,
+        godown_id: id,
         type: "",
         movement_type: "",
         movement_at: "",
     });
 
-    // filter option handle submit 
+    // filter option handle submit
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setIsLoading(true);
         const response = await getAllVehicleMovements(filter, '', '', false);
-        console.log(response.data)
         setViewDetails(response?.data?.data || []);
+        setIsLoading(false);
     }
-
-    // total net weight
-    const totalNetWeight = viewDetails.reduce((acc, item) => {
-        return item.type === "unload" ? acc + (item.net_weight || 0) : acc - (item.net_weight || 0);
-    }, 0);
-
-    // total PP bags
-    const totalPPBag = viewDetails.reduce((acc, item) => {
-        if (item?.cargo_detail?.bags_type === "pp") {
-            return item.type === "unload" ? acc + (item.cargo_detail?.bags_qty || 0) : acc - (item.cargo_detail?.bags_qty || 0);
-        }
-        return acc;
-    }, 0);
-
-    // total jute bags
-    const totalJuteBag = viewDetails.reduce((acc, item) => {
-        if (item?.cargo_detail?.bags_type === "jute") {
-            return item.type === "unload" ? acc + (item.cargo_detail?.bags_qty || 0) : acc - (item.cargo_detail?.bags_qty || 0);
-        }
-        return acc;
-    }, 0);
 
     // bottom calculation row
     const [pinnedRowData, setPinnedRowData] = useState([]);
-
     // const data table rows for vehicle movemennt
     const [vehicleTableRows, setVehicleTableRows] = useState([]);
     useEffect(() => {
+        // total net weight
+        const totalNetWeight = viewDetails.reduce((acc, item) => {
+            return item.type === "unload" ? acc + (item.net_weight || 0) : acc - (item.net_weight || 0);
+        }, 0);
+
+        // total PP bags
+        const totalPPBag = viewDetails.reduce((acc, item) => {
+            if (item?.cargo_detail?.bags_type === "pp") {
+                return item.type === "unload" ? acc + (item.cargo_detail?.bags_qty || 0) : acc - (item.cargo_detail?.bags_qty || 0);
+            }
+            return acc;
+        }, 0);
+
+        // total jute bags
+        const totalJuteBag = viewDetails.reduce((acc, item) => {
+            if (item?.cargo_detail?.bags_type === "jute") {
+                return item.type === "unload" ? acc + (item.cargo_detail?.bags_qty || 0) : acc - (item.cargo_detail?.bags_qty || 0);
+            }
+            return acc;
+        }, 0);
         if (viewDetails && viewDetails.length > 0) {
             const update = viewDetails.map((item) => ({
                 id: item.id,
@@ -66,20 +64,19 @@ const PartiesViewMovement = () => {
                 supplier: item.supplier?.legal_name ?? "-",
                 cargo: item.cargo?.cargo_name ?? "-",
                 godown: item.godown?.godown_name ?? "Pending",
-                net_weight: `${item.net_weight} KG` ?? "0 KG",
+                net_weight: `${item.net_weight} KGs` ?? "0 KGs",
                 pp_bag: item?.cargo_detail?.bags_type === "pp" ? item.cargo_detail?.bags_qty : 0,
                 jute_bag: item?.cargo_detail?.bags_type === "jute" ? item.cargo_detail?.bags_qty : 0,
             }))
             setVehicleTableRows(update);
         };
-        const total = viewDetails.length;
         setPinnedRowData([
             {
-                vehicle_no: `Total : ${total}`,
+                vehicle_no: `Total : ${viewDetails.length}`,
                 supplier: "",
                 cargo: "",
                 godown: "",
-                net_weight: totalNetWeight,
+                net_weight: totalNetWeight + " KGs",
                 pp_bag: totalPPBag,
                 jute_bag: totalJuteBag,
             },
@@ -102,30 +99,49 @@ const PartiesViewMovement = () => {
     // const data table rows for rail movemennt
     const [railTableRows, setRailTableRows] = useState([]);
     useEffect(() => {
+        // total net weight
+        const totalNetWeight = viewDetails.reduce((acc, item) => {
+            return item.type === "unload" ? acc + (item.net_weight || 0) : acc - (item.net_weight || 0);
+        }, 0);
+
+        // total PP bags
+        const totalPPBag = viewDetails.reduce((acc, item) => {
+            if (item?.cargo_detail?.bags_type === "pp") {
+                return item.type === "unload" ? acc + (item.cargo_detail?.bags_qty || 0) : acc - (item.cargo_detail?.bags_qty || 0);
+            }
+            return acc;
+        }, 0);
+
+        // total jute bags
+        const totalJuteBag = viewDetails.reduce((acc, item) => {
+            if (item?.cargo_detail?.bags_type === "jute") {
+                return item.type === "unload" ? acc + (item.cargo_detail?.bags_qty || 0) : acc - (item.cargo_detail?.bags_qty || 0);
+            }
+            return acc;
+        }, 0);
         if (viewDetails && viewDetails.length > 0) {
             setRailTableRows(
                 viewDetails.map((item) => ({
                     id: item.id,
                     rr_no: item.rr_no ? item.rr_no : "Pending",
-                    rr_date: item.rr_date ? item.rr_date : "-",
+                    rr_date: item.rr_date ? item.rr_date : "",
                     supplier: item.supplier?.legal_name ?? "-",
                     cargo: item.cargo?.cargo_name ?? "-",
                     godown: item.godown?.godown_name ?? "Pending",
-                    net_weight: item.net_weight ?? 0, // Keep it numeric
+                    net_weight: `${item.net_weight} KGs` ?? "0 KGs",
                     pp_bag: item?.cargo_detail?.bags_type === "pp" ? item.cargo_detail?.bags_qty : 0,
                     jute_bag: item?.cargo_detail?.bags_type === "jute" ? item.cargo_detail?.bags_qty : 0,
                 }))
             );
         };
-        const total = viewDetails.length;
         setPinnedRowData([
             {
-                rr_number: `Total : ${total}`,
+                rr_number: `Total : ${viewDetails.length}`,
                 rr_date: "",
                 supplier: "",
                 cargo: "",
                 godown: "",
-                net_weight: totalNetWeight,
+                net_weight: totalNetWeight + " KGs",
                 pp_bag: totalPPBag,
                 jute_bag: totalJuteBag,
             },
@@ -135,15 +151,7 @@ const PartiesViewMovement = () => {
 
     // const data table columns for rail movemennt
     const railTableColumns = [
-        {
-            field: "rr_no", headerName: "RR No", sortable: true, filter: "agTextColumnFilter", floatingFilter: true,
-            cellStyle: params => {
-                if (params.value === 'Pending') {
-                    return { color: 'white', backgroundColor: 'burlywood' };
-                }
-                return null;
-            }
-        },
+        { field: "rr_no", headerName: "RR No", sortable: true, filter: "agTextColumnFilter", floatingFilter: true },
         { field: "rr_date", headerName: "RR Date", sortable: true, filter: "agDateColumnFilter", floatingFilter: true },
         { field: "supplier", headerName: "Supplier", sortable: true, filter: "agTextColumnFilter", floatingFilter: true },
         { field: "cargo", headerName: "Cargo", sortable: true, filter: "agTextColumnFilter", floatingFilter: true },
@@ -156,62 +164,76 @@ const PartiesViewMovement = () => {
     // const data table row Data for shipment movemennt      
     const [shipmentTableRows, setShipmentTableRows] = useState([]);
     useEffect(() => {
+        console.log(viewDetails);
+        // total net weight
+        const totalNetWeight = viewDetails.reduce((acc, item) => {
+            return item.type === "unload" ? acc + (item.net_weight || 0) : acc - (item.net_weight || 0);
+        }, 0);
+
+        // total PP bags
+        const totalPPBag = viewDetails.reduce((acc, item) => {
+            if (item?.cargo_detail?.bags_type === "pp") {
+                return item.type === "unload" ? acc + (item.cargo_detail?.bags_qty || 0) : acc - (item.cargo_detail?.bags_qty || 0);
+            }
+            return acc;
+        }, 0);
+
+        // total jute bags
+        const totalJuteBag = viewDetails.reduce((acc, item) => {
+            if (item?.cargo_detail?.bags_type === "jute") {
+                return item.type === "unload" ? acc + (item.cargo_detail?.bags_qty || 0) : acc - (item.cargo_detail?.bags_qty || 0);
+            }
+            return acc;
+        }, 0);
         if (viewDetails && viewDetails.length > 0) {
+            const totalContainer = viewDetails.reduce((acc, item) => {
+                return item.type === "unload" ? acc + (item.container_no ?? 0) : acc - (item.container_no ?? 0);
+            }, 0);
+
             const update = viewDetails.map((item) => ({
                 id: item.id,
-                type: item.type === "load" ? "Load" : "Unload",
-                movement_type: item.movement_type ?? "-",
-                movement_at: item.movement_at ?? "-",
-                shipment_no: item.shipment_no ?? "-",
-                shipment_date: item.shipment_date ?? "-",
+                vessel_date: item.vessel_date ?? "-",
+                vessel_name: item.vessel_name ?? "-",
+                container: item.container_no ?? "-" + " x " + item.container_type ?? "-" + "'",
                 supplier: item.supplier?.legal_name ?? "-",
                 cargo: item.cargo?.cargo_name ?? "-",
                 godown: item.godown?.godown_name ?? "Pending",
-                net_weight: `${item.net_weight} KG` ?? "0 KG",
+                net_weight: `${item.net_weight} KGs` ?? "0 KG",
                 pp_bag: item?.cargo_detail?.bags_type === "pp" ? item.cargo_detail?.bags_qty : 0,
                 jute_bag: item?.cargo_detail?.bags_type === "jute" ? item.cargo_detail?.bags_qty : 0,
-            }))
+            }));
             setShipmentTableRows(update);
+            setPinnedRowData([
+                {
+                    vessel_date: `Total : ${viewDetails.length}`,
+                    vessel_name: "",
+                    container: totalContainer,
+                    supplier: "",
+                    cargo: "",
+                    godown: "",
+                    net_weight: totalNetWeight + " KGs",
+                    pp_bag: totalPPBag,
+                    jute_bag: totalJuteBag,
+                },
+            ])
         }
-        const total = viewDetails.length;
-        setPinnedRowData([
-            {
-                type: `Total : ${total}`,
-                movement_type: "",
-                movement_at: "",
-                supplier: "",
-                cargo: "",
-                godown: "",
-                net_weight: totalNetWeight,
-                pp_bag: totalPPBag,
-                jute_bag: totalJuteBag,
-            },
-        ])
+        else {
+            setShipmentTableRows([]);
+            setPinnedRowData([]);
+        }
     }, [viewDetails]);
 
     // const data table columns for shipment movemennt      
     const shipmentTableColumns = [
-        {
-            filed: "type", headerName: "Type", sortable: true, filter: "agTextColumnFilter", floatingFilter: true, cellStyle: params => {
-                if (params.value === 'Load') {
-                    return { color: 'black', backgroundColor: 'lightblue' };
-                }
-                if (params.value === 'Unload') {
-                    return { color: 'white', backgroundColor: 'burlywood' };
-                }
-                return null;
-            }
-        },
-        { filed: "movement_type", headerName: "Movement Type", sortable: true, filter: "agTextColumnFilter", floatingFilter: true, },
-        { filed: "movement_at", headerName: "Movement At", sortable: true, filter: "agDateColumnFilter", floatingFilter: true, },
-        { filed: "shipment_no", headerName: "Shipment No", sortable: true, filter: "agTextColumnFilter", floatingFilter: true, },
-        { filed: "shipment_date", headerName: "Shipment Date", sortable: true, filter: "agDateColumnFilter", floatingFilter: true, },
-        { filed: "supplier", headerName: "Supplier", sortable: true, filter: "agTextColumnFilter", floatingFilter: true, },
-        { filed: "cargo", headerName: "Cargo", sortable: true, filter: "agTextColumnFilter", floatingFilter: true, },
-        { filed: "godown", headerName: "Godown", sortable: true, filter: "agTextColumnFilter", floatingFilter: true, },
-        { filed: "net_weight", headerName: "Net Weight", sortable: true, filter: "agNumberColumnFilter", },
-        { filed: "pp_bag", headerName: "PP Bags", sortable: true, filter: "agNumberColumnFilter", },
-        { filed: "jute_bag", headerName: "Jute Bags", sortable: true, filter: "agNumberColumnFilter", }
+        { field: "vessel_date", headerName: "Shipment No", sortable: true, filter: "agTextColumnFilter", floatingFilter: true, },
+        { field: "vessel_name", headerName: "Shipment Date", sortable: true, filter: "agDateColumnFilter", floatingFilter: true, },
+        { field: "container", headerName: "Container", sortable: true, filter: "agTextColumnFilter", floatingFilter: true, },
+        { field: "supplier", headerName: "Supplier", sortable: true, filter: "agTextColumnFilter", floatingFilter: true, },
+        { field: "cargo", headerName: "Cargo", sortable: true, filter: "agTextColumnFilter", floatingFilter: true, },
+        { field: "godown", headerName: "Godown", sortable: true, filter: "agTextColumnFilter", floatingFilter: true, },
+        { field: "net_weight", headerName: "Net Weight", sortable: true, filter: "agNumberColumnFilter", },
+        { field: "pp_bag", headerName: "PP Bags", sortable: true, filter: "agNumberColumnFilter", },
+        { field: "jute_bag", headerName: "Jute Bags", sortable: true, filter: "agNumberColumnFilter", }
     ];
 
     // const select menu style
@@ -272,9 +294,9 @@ const PartiesViewMovement = () => {
 
             {/* data table for vehicle movement */}
             {
-                filter.movement_type === 'vehicle' ?
+                filter.movement_type === 'vehicle' && (
                     <>
-                        <button className="btn btn-primary btn-md mb-3" onClick={exportCSV}>    
+                        <button className="btn btn-primary btn-md mb-3" onClick={exportCSV}>
                             Download CSV
                         </button>
                         <div className="ag-theme-alpine" style={{ height: 500, width: "100%", marginTop: "15px" }}>
@@ -292,56 +314,38 @@ const PartiesViewMovement = () => {
                             />
                         </div>
                     </>
-                    :
-                    <></>
+                )
             }
-
-            {/* data table for rail movement */}
             {
-                filter.movement_type === 'rail' ?
-                    <>
-                        <button className="btn btn-primary btn-md mb-3" onClick={exportCSV}>
-                            Download CSV
-                        </button>
-                        <div className="ag-theme-alpine" style={{ height: 500, width: "100%", marginTop: "15px" }}>
-                            <AgGridReact
-                                ref={gridRef}
-                                rowData={railTableRows}
-                                columnDefs={railTableColumns}
-                                pagination={true}
-                                paginationPageSize={10}
-                                domLayout="autoHeight"
-                                pinnedBottomRowData={pinnedRowData}
-                            />
-                        </div>
-                    </>
-                    :
-                    <></>
+                filter.movement_type === 'rail' && (
+                    <div className="ag-theme-alpine" style={{ height: 500, width: "100%", marginTop: "15px" }}>
+                        <AgGridReact
+                            rowData={railTableRows}
+                            columnDefs={railTableColumns}
+                            pagination={true}
+                            paginationPageSize={10}
+                            domLayout="autoHeight"
+                            pinnedBottomRowData={pinnedRowData}
+                        />
+                    </div>
+                )
             }
-
-            {/* data table for shipment movement */}
             {
-                filter.movement_type === 'shipment' ?
-                    <>
-                        <div className="ag-theme-alpine" style={{ height: 500, width: "100%", marginTop: "15px" }}>
-                            <AgGridReact
-                                rowData={shipmentTableRows}
-                                columnDefs={shipmentTableColumns}
-                                pagination={true}
-                                paginationPageSize={10}
-                                frameworkComponents={{}}
-                                suppressAggFuncInHeader={true}
-                                domLayout="autoHeight"
-                                groupIncludeTotalFooter={true}
-                                pinnedBottomRowData={pinnedRowData}
-                            />
-                        </div>
-                    </>
-                    :
-                    <></>
+                filter.movement_type === 'shipment' && (
+                    <div className="ag-theme-alpine" style={{ height: 500, width: "100%", marginTop: "15px" }}>
+                        <AgGridReact
+                            rowData={shipmentTableRows}
+                            columnDefs={shipmentTableColumns}
+                            pagination={true}
+                            paginationPageSize={10}
+                            domLayout="autoHeight"
+                            pinnedBottomRowData={pinnedRowData}
+                        />
+                    </div>
+                )
             }
         </>
     )
-}
+};
 
-export default PartiesViewMovement;
+export default GodownViewMovementTab;

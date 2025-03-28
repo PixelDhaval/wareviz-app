@@ -23,6 +23,7 @@ import Report from "../pages/report";
 import OpningStockList from "../pages/opning-stock-list";
 import OpningStockEdit from "../pages/opning-stock-edit";
 import PartiesView from "../pages/parties-view";
+import GodownView from "../pages/godown-view";
 
 export const router = createBrowserRouter([
     {
@@ -72,6 +73,10 @@ export const router = createBrowserRouter([
             {
                 path: "/godown/edit",
                 element: <GodownEditPage />
+            },
+            {
+                path: "/godown/view",
+                element: <GodownView />
             },
             {
                 path: "/unload/create",

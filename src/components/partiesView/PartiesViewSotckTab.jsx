@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Chart from "react-apexcharts";
 import { getAllVehicleMovements } from "@/api/VehicleMovements";
 import { Placeholder } from "react-bootstrap";
@@ -144,8 +144,6 @@ const PartiesViewStockTab = () => {
         {
             field: "movement_at",
             headerName: "Movement At",
-            filter: "agDateColumnFilter",
-            floatingFilter: true,
         },
         {
             field: "supplier",
@@ -184,6 +182,14 @@ const PartiesViewStockTab = () => {
             headerName: "Jute Bags",
         },
     ];
+
+    // Export to CSV
+    const gridRef = useRef(null);
+    const exportCSV = () => {
+        if (gridRef.current) {
+            gridRef.current.api.exportDataAsCsv();
+        }
+    };
 
     return (
         <>
@@ -244,8 +250,12 @@ const PartiesViewStockTab = () => {
 
             {/* data table */}
             <div className="">
+                <button className="btn btn-primary btn-md mb-3" onClick={exportCSV}>
+                    Download CSV
+                </button>
                 <div className="ag-theme-alpine" style={{ height: 500, width: "100%", }}>
                     <AgGridReact
+                        ref={gridRef}
                         rowData={rowDataAgGrid}
                         columnDefs={colDefs}
                         pagination={true}
@@ -255,6 +265,7 @@ const PartiesViewStockTab = () => {
                         domLayout="autoHeight"
                         groupIncludeTotalFooter={true}
                         pinnedBottomRowData={pinnedRowData}
+                        pinnedTopRowData={pinnedRowData}
                     />
                 </div>
             </div>

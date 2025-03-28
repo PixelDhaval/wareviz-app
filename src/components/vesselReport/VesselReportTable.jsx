@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Form, Placeholder } from "react-bootstrap";
 import { getAllVehicleMovements } from "@/api/VehicleMovements";
 import Select from "react-select";
@@ -9,16 +9,8 @@ const VesselReportTable = () => {
     const [paginate, setPaginate] = React.useState(false);
     const [filters, SetFilters] = React.useState({
         movement_at: "",
-        party_id: "",
-        supplier_id: "",
-        cargo_id: "",
-        godown_id: "",
-        type: "",
-        vessel_name: "",
-        vessel_date: "",
         movement_type: "shipment",
     });
-    const [filterValue, setFilterValue] = useState({ field: "", value: "" });
     // dataTable state
     const [tableData, setTableData] = React.useState([]);
     const [isLoading, setIsLoading] = React.useState(false);
@@ -27,11 +19,12 @@ const VesselReportTable = () => {
     useEffect(() => {
         setIsLoading(true);
         const fetchData = async () => {
-            const response = await getAllVehicleMovements(filters, "", "", "", paginate);
+            const response = await getAllVehicleMovements(filters, "", "", false);
+            console.log(response.data)
             setTableData(response?.data?.data || []);
         };
         fetchData().then(() => setIsLoading(false));
-    }, [filters, paginate]);
+    }, [filters]);
 
 
 
@@ -54,12 +47,12 @@ const VesselReportTable = () => {
     const [rowData, setRowData] = useState([]);
     const [pinnedRowData, setPinnedRowData] = useState([]);
     useEffect(() => {
-        // Calculate totals
-        const totalRows = tableData.length;
-        const totalGrossWeight = tableData.reduce((sum, item) => sum + (item.gross_weight ?? 0), 0);
-        const totalNetWeight = tableData.reduce((sum, item) => sum + (item.net_weight ?? 0), 0);
-        const totalContainer = tableData.reduce((sum, item) => sum + (item.container_no ?? 0), 0);
         if (tableData && tableData.length > 0) {
+            // Calculate totals
+            const totalRows = tableData.length;
+            const totalGrossWeight = tableData.reduce((sum, item) => sum + (item.gross_weight ?? 0), 0);
+            const totalNetWeight = tableData.reduce((sum, item) => sum + (item.net_weight ?? 0), 0);
+            const totalContainer = tableData.reduce((sum, item) => sum + (item.container_no ?? 0), 0);
             const update = tableData.map(item => ({
                 vessel_name: item.vessel_name,
                 vessel_date: item.vessel_date,
@@ -74,37 +67,39 @@ const VesselReportTable = () => {
                 gross_weight: item.gross_weight ?? 0,
             }));
             setRowData(update);
+            setPinnedRowData([
+                {
+                    vessel_name: `Total : ${totalRows}`,
+                    vessel_date: "",
+                    shipment: totalContainer,
+                    party: "",
+                    godown: "",
+                    supplier: "",
+                    cargo: "",
+                    type: "",
+                    movement_at: "",
+                    net_weight: totalNetWeight,
+                    gross_weight: totalGrossWeight,
+                }
+            ])
         }
-        setPinnedRowData([
-            {
-                vessel_name: `Total : ${totalRows}`,
-                vessel_date: "",
-                shipment: totalContainer,
-                party: "",
-                godown: "",
-                supplier: "",
-                cargo: "",
-                type: "",
-                movement_at: "",
-                net_weight: totalNetWeight,
-                gross_weight: totalGrossWeight,
-            }
-        ])
+        else {
+            setRowData([]);
+            setPinnedRowData([]);
+        }
     }, [tableData]);
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        SetFilters({
-            ...filters,
-            movement_at: filters.movement_at,
-            net_weight: filters.net_weight,
-            gross_weight: filters.gross_weight,
-        });
+    // Export to CSV
+    const gridRef = useRef(null);
+    const exportCSV = () => {
+        if (gridRef.current) {
+            gridRef.current.api.exportDataAsCsv();
+        }
     };
 
     return (
         <div className="card-body">
-            <Form onSubmit={handleSubmit}>
+            <Form onSubmit={(e) => e.preventDefault()}>
                 <div className="">
                     <Form.Label>Select Date</Form.Label>
                     <Form.Control
@@ -121,16 +116,22 @@ const VesselReportTable = () => {
                     <>
                         {filters.movement_at !== '' && (
                             <>
-                                <AgGridReact
-                                    rowData={rowData}
-                                    columnDefs={columns}
-                                    pagination={true}
-                                    paginationPageSize={10}
-                                    frameworkComponents={{}}
-                                    suppressAggFuncInHeader={true}
-                                    domLayout="autoHeight"
-                                    pinnedBottomRowData={pinnedRowData}
-                                />
+                                <button className="btn btn-primary btn-md my-3" onClick={exportCSV}>
+                                    Download CSV
+                                </button>
+                                <div className="ag-theme-alpine" style={{ height: 500, width: "100%", marginTop: "15px" }}>
+                                    <AgGridReact
+                                        ref={gridRef}
+                                        rowData={rowData}
+                                        columnDefs={columns}
+                                        pagination={true}
+                                        paginationPageSize={10}
+                                        frameworkComponents={{}}
+                                        suppressAggFuncInHeader={true}
+                                        domLayout="autoHeight"
+                                        pinnedBottomRowData={pinnedRowData}
+                                    />
+                                </div>
                             </>
                         )}
                     </>

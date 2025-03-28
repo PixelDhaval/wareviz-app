@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Form, Placeholder } from "react-bootstrap";
 import { getAllVehicleMovements } from "@/api/VehicleMovements";
 import DataTable from "react-data-table-component";
@@ -52,19 +52,18 @@ const ShiftingReportTable = () => {
         { field: "net_weight", headerName: "Net Weight", },
         { field: "pp_bags", headerName: "PP Bags", },
         { field: "jute_bags", headerName: "Jute Bags", },
-        { field: "total_weight", headerName: "Total Weight", },
     ];
 
     // Process table data and add summary row
     const [godownTableData, setGodownTableData] = useState([]);
     const [pinnedRowData, setPinnedRowData] = useState([]);
     useEffect(() => {
-        const total = tableData.length;
-        const totalNetWeight = tableData.reduce((sum, item) => sum + (item.net_weight ?? 0), 0);
-        const totalPPBags = tableData.reduce((sum, item) => sum + (item.cargo_detail?.bags_type === "pp" ? item.cargo_detail?.bags_qty : 0), 0);
-        const totalJuteBags = tableData.reduce((sum, item) => sum + (item.cargo_detail?.bags_type === "jute" ? item.cargo_detail?.bags_qty : 0), 0);
-        const totalWeight = tableData.reduce((sum, item) => sum + (item.cargo_detail?.total_weight ?? 0), 0);
         if (tableData && tableData.length > 0) {
+            const total = tableData.length;
+            const totalNetWeight = tableData.reduce((sum, item) => sum + (item.net_weight ?? 0), 0);
+            const totalPPBags = tableData.reduce((sum, item) => sum + (item.cargo_detail?.bags_type === "pp" ? item.cargo_detail?.bags_qty : 0), 0);
+            const totalJuteBags = tableData.reduce((sum, item) => sum + (item.cargo_detail?.bags_type === "jute" ? item.cargo_detail?.bags_qty : 0), 0);
+            const totalWeight = tableData.reduce((sum, item) => sum + (item.cargo_detail?.total_weight ?? 0), 0);
             const update = tableData.map(item => ({
                 party: item.party?.trade_name,
                 supplier: item.supplier?.trade_name,
@@ -74,23 +73,25 @@ const ShiftingReportTable = () => {
                 net_weight: item.net_weight ?? 0,
                 pp_bags: item.cargo_detail?.bags_type === "pp" ? item.cargo_detail?.bags_qty : 0,
                 jute_bags: item.cargo_detail?.bags_type === "jute" ? item.cargo_detail?.bags_qty : 0,
-                total_weight: item.cargo_detail?.total_weight ?? 0,
             }));
             setGodownTableData(update);
+            setPinnedRowData([
+                {
+                    party: `Total : ${total}`,
+                    supplier: "",
+                    cargo: "",
+                    formGodown: "",
+                    toGodown: "",
+                    net_weight: totalNetWeight ?? 0,
+                    pp_bags: totalPPBags ?? 0,
+                    jute_bags: totalJuteBags ?? 0,
+                }
+            ])
         }
-        setPinnedRowData([
-            {
-                party: `Total : ${total}`,
-                supplier: "",
-                cargo: "",
-                formGodown: "",
-                toGodown: "",
-                net_weight: totalNetWeight ?? 0,
-                pp_bags: totalPPBags ?? 0,
-                jute_bags: totalJuteBags ?? 0,
-                total_weight: totalWeight ?? 0
-            }
-        ])
+        else {
+            setGodownTableData([]);
+            setPinnedRowData([]);
+        }
     }, [tableData]);
 
     // Table columns for party view
@@ -103,19 +104,18 @@ const ShiftingReportTable = () => {
         { field: "net_weight", headerName: "Net Weight", },
         { field: "pp_bags", headerName: "PP Bags", },
         { field: "jute_bags", headerName: "Jute Bags", },
-        { field: "total_weight", headerName: "Total Weight", },
     ];
 
     // Process table data and add summary row
     const [partyTableData, setPartyTableData] = useState([]);
     const [pinnedPartyRowData, setPinnedPartyRowData] = useState([]);
     useEffect(() => {
-        const total = tableData.length;
-        const totalNetWeight = tableData.reduce((sum, item) => sum + (item.net_weight ?? 0), 0);
-        const totalPPBags = tableData.reduce((sum, item) => sum + (item.cargo_detail?.bags_type === "pp" ? item.cargo_detail?.bags_qty : 0), 0);
-        const totalJuteBags = tableData.reduce((sum, item) => sum + (item.cargo_detail?.bags_type === "jute" ? item.cargo_detail?.bags_qty : 0), 0);
-        const totalWeight = tableData.reduce((sum, item) => sum + (item.cargo_detail?.total_weight ?? 0), 0);
         if (tableData && tableData.length > 0) {
+            const total = tableData.length;
+            const totalNetWeight = tableData.reduce((sum, item) => sum + (item.net_weight ?? 0), 0);
+            const totalPPBags = tableData.reduce((sum, item) => sum + (item.cargo_detail?.bags_type === "pp" ? item.cargo_detail?.bags_qty : 0), 0);
+            const totalJuteBags = tableData.reduce((sum, item) => sum + (item.cargo_detail?.bags_type === "jute" ? item.cargo_detail?.bags_qty : 0), 0);
+            const totalWeight = tableData.reduce((sum, item) => sum + (item.cargo_detail?.total_weight ?? 0), 0);
             const update = tableData.map(item => ({
                 formParty: item.party?.trade_name,
                 toParty: item.ref_movement?.party?.trade_name,
@@ -125,25 +125,40 @@ const ShiftingReportTable = () => {
                 net_weight: item.net_weight ?? 0,
                 pp_bags: item.cargo_detail?.bags_type === "pp" ? item.cargo_detail?.bags_qty : 0,
                 jute_bags: item.cargo_detail?.bags_type === "jute" ? item.cargo_detail?.bags_qty : 0,
-                total_weight: item.cargo_detail?.total_weight ?? 0,
             }));
             setPartyTableData(update);
+            setPinnedPartyRowData([
+                {
+                    formParty: `Total : ${total}`,
+                    toParty: "",
+                    supplier: "",
+                    cargo: "",
+                    godown: "",
+                    net_weight: totalNetWeight ?? 0,
+                    pp_bags: totalPPBags ?? 0,
+                    jute_bags: totalJuteBags ?? 0,
+                }
+            ])
         }
-        setPinnedPartyRowData([
-            {
-                formParty: `Total : ${total}`,
-                toParty: "",
-                supplier: "",
-                cargo: "",
-                godown: "",
-                net_weight: totalNetWeight ?? 0,
-                pp_bags: totalPPBags ?? 0,
-                jute_bags: totalJuteBags ?? 0,
-                total_weight: totalWeight ?? 0
-            }
-        ])
-    }, [tableData])
+        else {
+            setPartyTableData([]);
+            setPinnedRowData([]);
+        }
+    }, [tableData]);
 
+    // const select menu style
+    const selectMenuStyle = {
+        menuPortal: provided => ({ ...provided, zIndex: 9999 }),
+        menu: provided => ({ ...provided, zIndex: 9999 })
+    }
+
+    // Export to CSV
+    const gridRef = useRef(null);
+    const exportCSV = () => {
+        if (gridRef.current) {
+            gridRef.current.api.exportDataAsCsv();
+        }
+    };
 
     return (
         <div className="card-body">
@@ -167,6 +182,7 @@ const ShiftingReportTable = () => {
                                 { value: "godown_shifting", label: "Godown Shifting" },
                             ]}
                             onChange={(selectOption) => SetFilters({ ...filters, movement_type: selectOption.value })}
+                            styles={selectMenuStyle}
                         />
                     </div>
                 </div>
@@ -179,27 +195,39 @@ const ShiftingReportTable = () => {
                             <>
                                 {
                                     filters.movement_type == "godown_shifting" ?
-                                        <div className="ag-theme-alpine" style={{ height: 500, width: "100%", marginTop: "15px" }}>
-                                            <AgGridReact
-                                                rowData={godownTableData}
-                                                columnDefs={godownTableColumns}
-                                                pagination={true}
-                                                paginationPageSize={10}
-                                                domLayout="autoHeight"
-                                                pinnedBottomRowData={pinnedRowData}
-                                            />
-                                        </div>
+                                        <>
+                                            <button className="btn btn-primary btn-md my-3" onClick={exportCSV}>
+                                                Download CSV
+                                            </button>
+                                            <div className="ag-theme-alpine" style={{ height: 500, width: "100%", marginTop: "15px" }}>
+                                                <AgGridReact
+                                                    ref={gridRef}
+                                                    rowData={godownTableData}
+                                                    columnDefs={godownTableColumns}
+                                                    pagination={true}
+                                                    paginationPageSize={10}
+                                                    domLayout="autoHeight"
+                                                    pinnedBottomRowData={pinnedRowData}
+                                                />
+                                            </div>
+                                        </>
                                         :
-                                        <div className="ag-theme-alpine" style={{ height: 500, width: "100%", marginTop: "15px" }}>
-                                            <AgGridReact
-                                                rowData={partyTableData}
-                                                columnDefs={partyTableColumns}
-                                                pagination={true}
-                                                paginationPageSize={10}
-                                                domLayout="autoHeight"
-                                                pinnedBottomRowData={pinnedPartyRowData}
-                                            />
-                                        </div>
+                                        <>
+                                            <button className="btn btn-primary btn-md my-3" onClick={exportCSV}>
+                                                Download CSV
+                                            </button>
+                                            <div className="ag-theme-alpine" style={{ height: 500, width: "100%", marginTop: "15px" }}>
+                                                <AgGridReact
+                                                    ref={gridRef}
+                                                    rowData={partyTableData}
+                                                    columnDefs={partyTableColumns}
+                                                    pagination={true}
+                                                    paginationPageSize={10}
+                                                    domLayout="autoHeight"
+                                                    pinnedBottomRowData={pinnedPartyRowData}
+                                                />
+                                            </div>
+                                        </>
                                 }
                             </>
                         )}

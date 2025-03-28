@@ -113,7 +113,7 @@ const GodownList = () => {
     // data table data state
     const data = godownList?.map(item => {
         return {
-            godown_name: <Link to={`/godown/edit?id=${item.id}`}>{item.godown_name}</Link>,
+            godown_name: <Link to={`/godown/view?id=${item.id}`}>{item.godown_name}</Link>,
             godown_no: item.godown_no,
             location: item.location,
             capacity: item.capacity,
