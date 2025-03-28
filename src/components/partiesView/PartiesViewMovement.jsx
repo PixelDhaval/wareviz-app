@@ -1,9 +1,13 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { FiFilter } from "react-icons/fi";
 import Select from "react-select";
 import { getAllVehicleMovements } from "@/api/VehicleMovements";
 import DataTable from "react-data-table-component";
+import { MdDownloading } from "react-icons/md";
+import { AgGridReact } from "ag-grid-react";
+import { AllCommunityModule, ModuleRegistry, themeAlpine, themeBalham, themeMaterial, themeQuartz } from 'ag-grid-community';
+ModuleRegistry.registerModules([AllCommunityModule]);
 
 const PartiesViewMovement = () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -26,7 +30,6 @@ const PartiesViewMovement = () => {
         const response = await getAllVehicleMovements(filter, '', '', false);
         setViewDetails(response?.data?.data || []);
     }
-    console.log(viewDetails);
 
     // total net weight
     const totalNetWeight = viewDetails.reduce((acc, item) => {
@@ -49,157 +52,193 @@ const PartiesViewMovement = () => {
         return acc;
     }, 0);
 
+    // bottom calculation row
+    const [pinnedRowData, setPinnedRowData] = useState([]);
+
+    // const data table rows for vehicle movemennt
+    const [vehicleTableRows, setVehicleTableRows] = useState([]);
+    useEffect(() => {
+        if (viewDetails && viewDetails.length > 0) {
+            const update = viewDetails.map((item) => ({
+                id: item.id,
+                type: item.type === "load" ? "Load" : "Unload",
+                movement_type: item.movement_type ?? "-",
+                movement_at: item.movement_at ?? "-",
+                vehicle_no: item.vehicle_no ?? "",
+                supplier: item.supplier?.legal_name ?? "-",
+                cargo: item.cargo?.cargo_name ?? "-",
+                godown: item.godown?.godown_name ?? "Pending",
+                net_weight: `${item.net_weight} KG` ?? "0 KG",
+                pp_bag: item?.cargo_detail?.bags_type === "pp" ? item.cargo_detail?.bags_qty : 0,
+                jute_bag: item?.cargo_detail?.bags_type === "jute" ? item.cargo_detail?.bags_qty : 0,
+            }))
+            setVehicleTableRows(update);
+        };
+        setPinnedRowData([
+            {
+                type: "Total",
+                movement_type: "",
+                movement_at: "",
+                vehicle_no: "",
+                supplier: "",
+                cargo: "",
+                godown: "",
+                net_weight: totalNetWeight,
+                pp_bag: totalPPBag,
+                jute_bag: totalJuteBag,
+            },
+        ])
+    }, [viewDetails]);
+
+
     // const data table columns for vehicle movemennt
     const vehicleTableColumns = [
-        { name: "Type", selector: (row) => row.type, sortable: true },
-        { name: "Movement Type", selector: (row) => row.movement_type, sortable: true },
-        { name: "Movement At", selector: (row) => row.movement_at, sortable: true },
-        { name: "Vehicle No", selector: (row) => row.vehicle_no, sortable: true },
-        { name: "Driver Name", selector: (row) => row.driver_name, sortable: true },
-        { name: "Supplier", selector: (row) => row.supplier, sortable: true },
-        { name: "Cargo", selector: (row) => row.cargo, sortable: true },
-        { name: "Godown", selector: (row) => row.godown, sortable: true },
-        { name: "Net Weight", selector: (row) => row.net_weight, sortable: true },
-        { name: "PP Bags", selector: (row) => row.pp_bag, sortable: true },
-        { name: "Jute Bags", selector: (row) => row.jute_bag, sortable: true },
+        { field: "type", headerName: "Type", sortable: true, filter: "agTextColumnFilter", floatingFilter: true,cellStyle: params => {
+            if (params.value === 'Load') {
+                return { color: 'black', backgroundColor: 'lightblue' };
+            }
+            if (params.value === 'Unload') {
+                return { color: 'white', backgroundColor: 'burlywood' };
+            }
+            return null;
+        } },
+        { field: "movement_type", headerName: "Movement Type", sortable: true, filter: "agTextColumnFilter", floatingFilter: true },
+        { field: "movement_at", headerName: "Movement At", sortable: true, filter: "agDateColumnFilter", floatingFilter: true },
+        { field: "vehicle_no", headerName: "Vehicle No", sortable: true, filter: "agTextColumnFilter", floatingFilter: true },
+        { field: "supplier", headerName: "Supplier", sortable: true, filter: "agTextColumnFilter", floatingFilter: true },
+        { field: "cargo", headerName: "Cargo", sortable: true, filter: "agTextColumnFilter", floatingFilter: true },
+        { field: "godown", headerName: "Godown", sortable: true, filter: "agTextColumnFilter", floatingFilter: true },
+        { field: "net_weight", headerName: "Net Weight", sortable: true, filter: "agNumberColumnFilter" },
+        { field: "pp_bag", headerName: "PP Bags", sortable: true, filter: "agNumberColumnFilter" },
+        { field: "jute_bag", headerName: "Jute Bags", sortable: true, filter: "agNumberColumnFilter" }
     ];
 
-    // const data table data print for vehicle movemennt
-    const vehicleTableData = [
-        ...viewDetails.map(item => ({
-            type: item.type == 'load' ? <span className="badge bg-soft-warning text-warning">Load</span> : <span className="badge bg-soft-primary text-primary">Unload</span>,
-            movement_type: item.movement_type,
-            movement_at: item.movement_at,
-            vehicle_no: item.vehicle_no,
-            driver_name: item.driver_name,              
-            supplier: item.supplier?.legal_name,
-            cargo: item.cargo?.cargo_name,
-            godown: item.godown?.godown_name ?? (
-                <span className="badge bg-soft-warning text-warning">Pending</span>
-            ),
-            net_weight: `${item.net_weight} KG`,
-            pp_bag: item?.cargo_detail?.bags_type === "pp" ? item.cargo_detail?.bags_qty : 0,
-            jute_bag: item?.cargo_detail?.bags_type === "jute" ? item.cargo_detail?.bags_qty : 0,
-        })),
-        // Add total row
-        {
-            type: "Total",
-            movement_type: "",
-            movement_at: "",
-            vehicle_no: "",
-            driver_name: "",
-            supplier: "",
-            cargo: "",
-            godown: "",
-            net_weight: `${totalNetWeight} KG`,
-            pp_bag: totalPPBag,
-            jute_bag: totalJuteBag,
-        }   
-    ]
+
+    // const data table rows for rail movemennt
+    const [railTableRows, setRailTableRows] = useState([]);
+    useEffect(() => {
+        if (viewDetails && viewDetails.length > 0) {
+            setRailTableRows(
+                viewDetails.map((item) => ({
+                    id: item.id,
+                    type: item.type === "load" ? "Load" : "Unload",
+                    movement_type: item.movement_type ?? "-",
+                    movement_at: item.movement_at ?? "-",
+                    rr_no: item.rr_no ? item.rr_no : "Pending",
+                    rr_date: item.rr_date ? item.rr_date : "",
+                    supplier: item.supplier?.legal_name ?? "-",
+                    cargo: item.cargo?.cargo_name ?? "-",
+                    godown: item.godown?.godown_name ?? "Pending",
+                    net_weight: item.net_weight ?? 0, // Keep it numeric
+                    pp_bag: item?.cargo_detail?.bags_type === "pp" ? item.cargo_detail?.bags_qty : 0,
+                    jute_bag: item?.cargo_detail?.bags_type === "jute" ? item.cargo_detail?.bags_qty : 0,
+                }))
+            );
+        };
+        setPinnedRowData([
+            {
+                type: "Total",
+                movement_type: "",
+                movement_at: "",
+                supplier: "",
+                cargo: "",
+                godown: "",
+                net_weight: totalNetWeight,
+                pp_bag: totalPPBag,
+                jute_bag: totalJuteBag,
+            },
+        ])
+    }, [viewDetails]);
+
 
     // const data table columns for rail movemennt
     const railTableColumns = [
-        { name: "Type", selector: (row) => row.type, sortable: true },
-        { name: "Movement Type", selector: (row) => row.movement_type, sortable: true },
-        { name: "Movement At", selector: (row) => row.movement_at, sortable: true },
-        { name: "Railway No", selector: (row) => row.rr_no, sortable: true },
-        { name: "RR Date", selector: (row) => row.rr_date, sortable: true },
-        { name: "Supplier", selector: (row) => row.supplier, sortable: true },
-        { name: "Cargo", selector: (row) => row.cargo, sortable: true },
-        { name: "Godown", selector: (row) => row.godown, sortable: true },
-        { name: "Net Weight", selector: (row) => row.net_weight, sortable: true },
-        { name: "PP Bags", selector: (row) => row.pp_bag, sortable: true },
-        { name: "Jute Bags", selector: (row) => row.jute_bag, sortable: true },
+        { field: "type", headerName: "Type", sortable: true, filter: "agTextColumnFilter", floatingFilter: true,cellStyle: params => {
+            if (params.value === 'Load') {
+                return { color: 'black', backgroundColor: 'lightblue' };
+            }
+            if (params.value === 'Unload') {
+                return { color: 'white', backgroundColor: 'burlywood' };
+            }
+            return null;
+        } },
+        { field: "movement_type", headerName: "Movement Type", sortable: true, filter: "agTextColumnFilter", floatingFilter: true },
+        { field: "movement_at", headerName: "Movement At", sortable: true, filter: "agDateColumnFilter", floatingFilter: true },
+        { field: "rr_no", headerName: "RR No", sortable: true, filter: "agTextColumnFilter", floatingFilter: true },
+        { field: "rr_date", headerName: "RR Date", sortable: true, filter: "agDateColumnFilter", floatingFilter: true },
+        { field: "supplier", headerName: "Supplier", sortable: true, filter: "agTextColumnFilter", floatingFilter: true },
+        { field: "cargo", headerName: "Cargo", sortable: true, filter: "agTextColumnFilter", floatingFilter: true },
+        { field: "godown", headerName: "Godown", sortable: true, filter: "agTextColumnFilter", floatingFilter: true },
+        { field: "net_weight", headerName: "Net Weight (KG)", sortable: true, filter: "agNumberColumnFilter", cellRenderer: (params) => `${params.value} KG` },
+        { field: "pp_bag", headerName: "PP Bags", sortable: true, filter: "agNumberColumnFilter" },
+        { field: "jute_bag", headerName: "Jute Bags", sortable: true, filter: "agNumberColumnFilter" }
     ];
 
-    // const data table data print for rail movemennt
-    const railTableData = [
-        ...viewDetails.map(item => ({
-            type: item.type == 'load' ? <span className="badge bg-soft-warning text-warning">Load</span> : <span className="badge bg-soft-primary text-primary">Unload</span>,
-            movement_type: item.movement_type,
-            movement_at: item.movement_at,
-            rr_no: item.rr_no ? item.rr_no : <span className="badge bg-soft-warning text-warning">Pending</span>,
-            rr_date: item.rr_date ? item.rr_date : <span className="badge bg-soft-warning text-warning">Pending</span>,
-            supplier: item.supplier?.legal_name,
-            cargo: item.cargo?.cargo_name,
-            godown: item.godown?.godown_name ?? (
-                <span className="badge bg-soft-warning text-warning">Pending</span>
-            ),
-            net_weight: `${item.net_weight} KG`,
-            pp_bag: item?.cargo_detail?.bags_type === "pp" ? item.cargo_detail?.bags_qty : 0,
-            jute_bag: item?.cargo_detail?.bags_type === "jute" ? item.cargo_detail?.bags_qty : 0,
-        })),
-        // add total row
-        {
-            type: "Total",
-            movement_type: "",
-            movement_at: "",
-            rr_no: "",
-            rr_date: "",
-            supplier: "",
-            cargo: "",
-            godown: "",
-            net_weight: `${totalNetWeight} KG`,
-            pp_bag: totalPPBag,
-            jute_bag: totalJuteBag,
+    // const data table row Data for shipment movemennt      
+    const [shipmentTableRows, setShipmentTableRows] = useState([]);
+    useEffect(() => {
+        if (viewDetails && viewDetails.length > 0) {
+            const update = viewDetails.map((item) => ({
+                id: item.id,
+                type: item.type === "load" ? "Load" : "Unload",
+                movement_type: item.movement_type ?? "-",
+                movement_at: item.movement_at ?? "-",
+                shipment_no: item.shipment_no ?? "-",
+                shipment_date: item.shipment_date ?? "-",
+                supplier: item.supplier?.legal_name ?? "-",
+                cargo: item.cargo?.cargo_name ?? "-",
+                godown: item.godown?.godown_name ?? "Pending",
+                net_weight: `${item.net_weight} KG` ?? "0 KG",
+                pp_bag: item?.cargo_detail?.bags_type === "pp" ? item.cargo_detail?.bags_qty : 0,
+                jute_bag: item?.cargo_detail?.bags_type === "jute" ? item.cargo_detail?.bags_qty : 0,
+            }))
+            setShipmentTableRows(update);
         }
-    ]
+        setPinnedRowData([
+            {
+                type: "Total",
+                movement_type: "",
+                movement_at: "",
+                supplier: "",
+                cargo: "",
+                godown: "",
+                net_weight: totalNetWeight,
+                pp_bag: totalPPBag,
+                jute_bag: totalJuteBag,
+            },
+        ])
+    }, [viewDetails]);
 
     // const data table columns for shipment movemennt      
     const shipmentTableColumns = [
-        { name: "Type", selector: (row) => row.type, sortable: true },
-        { name: "Movement Type", selector: (row) => row.movement_type, sortable: true },
-        { name: "Movement At", selector: (row) => row.movement_at, sortable: true },
-        { name: "Shipment No", selector: (row) => row.shipment_no, sortable: true },
-        { name: "Shipment Date", selector: (row) => row.shipment_date, sortable: true },
-        { name: "Supplier", selector: (row) => row.supplier, sortable: true },
-        { name: "Cargo", selector: (row) => row.cargo, sortable: true },
-        { name: "Godown", selector: (row) => row.godown, sortable: true },
-        { name: "Net Weight", selector: (row) => row.net_weight, sortable: true },
-        { name: "PP Bags", selector: (row) => row.pp_bag, sortable: true },     
-        { name: "Jute Bags", selector: (row) => row.jute_bag, sortable: true },
+        { filed: "type", headerName: "Type", sortable: true, filter: "agTextColumnFilter", floatingFilter: true,cellStyle: params => {
+            if (params.value === 'Load') {
+                return { color: 'black', backgroundColor: 'lightblue' };
+            }
+            if (params.value === 'Unload') {
+                return { color: 'white', backgroundColor: 'burlywood' };
+            }
+            return null;
+        } },
+        { filed: "movement_type", headerName: "Movement Type", sortable: true, filter: "agTextColumnFilter", floatingFilter: true, },
+        { filed: "movement_at", headerName: "Movement At", sortable: true, filter: "agDateColumnFilter", floatingFilter: true, },
+        { filed: "shipment_no", headerName: "Shipment No", sortable: true, filter: "agTextColumnFilter", floatingFilter: true, },
+        { filed: "shipment_date", headerName: "Shipment Date", sortable: true, filter: "agDateColumnFilter", floatingFilter: true, },
+        { filed: "supplier", headerName: "Supplier", sortable: true, filter: "agTextColumnFilter", floatingFilter: true, },
+        { filed: "cargo", headerName: "Cargo", sortable: true, filter: "agTextColumnFilter", floatingFilter: true, },
+        { filed: "godown", headerName: "Godown", sortable: true, filter: "agTextColumnFilter", floatingFilter: true, },
+        { filed: "net_weight", headerName: "Net Weight", sortable: true, filter: "agNumberColumnFilter", },
+        { filed: "pp_bag", headerName: "PP Bags", sortable: true, filter: "agNumberColumnFilter", },
+        { filed: "jute_bag", headerName: "Jute Bags", sortable: true, filter: "agNumberColumnFilter", }
     ];
-
-    // const data table data print for shipment movemennt
-    const shipmentTableData = [
-        ...viewDetails.map(item => ({
-            type: item.type == 'load' ? <span className="badge bg-soft-warning text-warning">Load</span> : <span className="badge bg-soft-primary text-primary">Unload</span>,
-            movement_type: item.movement_type,
-            movement_at: item.movement_at,
-            shipment_no: item.shipment_no,
-            shipment_date: item.shipment_date,
-            supplier: item.supplier?.legal_name,
-            cargo: item.cargo?.cargo_name,
-            godown: item.godown?.godown_name ?? (
-                <span className="badge bg-soft-warning text-warning">Pending</span>
-            ),
-            net_weight: `${item.net_weight} KG`,
-            pp_bag: item?.cargo_detail?.bags_type === "pp" ? item.cargo_detail?.bags_qty : 0,   
-            jute_bag: item?.cargo_detail?.bags_type === "jute" ? item.cargo_detail?.bags_qty : 0,
-        })),
-        // add total row
-        {
-            type: "Total",
-            movement_type: "",
-            movement_at: "",
-            shipment_no: "",
-            shipment_date: "",
-            supplier: "",
-            cargo: "",
-            godown: "",
-            net_weight: `${totalNetWeight} KG`,
-            pp_bag: totalPPBag,     
-            jute_bag: totalJuteBag,
-        }   
-    ]
 
     return (
         <>
             <Form onSubmit={handleSubmit}>
-                <div className="row align-items-end">
+                <div className="row align-items-end mb-3">
                     <div className="col-12 col-lg-4">
                         <Form.Label>Type</Form.Label>
-                        <Select 
+                        <Select
                             options={[
                                 { value: 'load', label: 'Load' },
                                 { value: 'unload', label: 'Unload' },
@@ -209,7 +248,7 @@ const PartiesViewMovement = () => {
                     </div>
                     <div className="col-12 col-lg-4">
                         <Form.Label>Movement Type</Form.Label>
-                        <Select 
+                        <Select
                             options={[
                                 { value: 'rail', label: 'Rail' },
                                 { value: 'vehicle', label: 'Vehicle' },
@@ -220,15 +259,15 @@ const PartiesViewMovement = () => {
                     </div>
                     <div className="col-12 col-lg-3">
                         <Form.Label>Date</Form.Label>
-                        <Form.Control 
-                            type="date" 
+                        <Form.Control
+                            type="date"
                             placeholder="Select date"
                             onChange={(e) => setfilter({ ...filter, movement_at: e.target.value })}
                             className="p-2"
                         />
                     </div>
                     <div className="col-12 col-lg-1">
-                        <Button type="submit" className="p-2"><FiFilter size={16} className="" /></Button>
+                        <Button type="submit" className="p-1"><MdDownloading size={26} className="" /></Button>
                     </div>
                 </div>
             </Form>
@@ -236,12 +275,21 @@ const PartiesViewMovement = () => {
             {/* data table for vehicle movement */}
             {
                 filter.movement_type === 'vehicle' ?
-                    <DataTable
-                        columns={vehicleTableColumns}
-                        data={vehicleTableData}
-                        pagination
-                        // progressPending={isLoading}
-                    />
+                    <>
+                        <div className="ag-theme-alpine" style={{ height: 500, width: "100%", marginTop: "15px" }}>
+                            <AgGridReact
+                                rowData={vehicleTableRows}
+                                columnDefs={vehicleTableColumns}
+                                pagination={true}
+                                paginationPageSize={10}
+                                frameworkComponents={{}}
+                                suppressAggFuncInHeader={true}
+                                domLayout="autoHeight"
+                                groupIncludeTotalFooter={true}
+                                pinnedBottomRowData={pinnedRowData}
+                            />
+                        </div>
+                    </>
                     :
                     <></>
             }
@@ -249,12 +297,18 @@ const PartiesViewMovement = () => {
             {/* data table for rail movement */}
             {
                 filter.movement_type === 'rail' ?
-                    <DataTable
-                        columns={railTableColumns}
-                        data={railTableData}
-                        pagination
-                        // progressPending={isLoading}
-                    />
+                    <>
+                        <div className="ag-theme-alpine" style={{ height: 500, width: "100%", marginTop: "15px" }}>
+                            <AgGridReact
+                                rowData={railTableRows}
+                                columnDefs={railTableColumns}
+                                pagination={true}
+                                paginationPageSize={10}
+                                domLayout="autoHeight"
+                                pinnedBottomRowData={pinnedRowData}
+                            />
+                        </div>
+                    </>
                     :
                     <></>
             }
@@ -262,12 +316,21 @@ const PartiesViewMovement = () => {
             {/* data table for shipment movement */}
             {
                 filter.movement_type === 'shipment' ?
-                    <DataTable
-                        columns={shipmentTableColumns}
-                        data={shipmentTableData}
-                        pagination
-                        // progressPending={isLoading}
-                    />
+                    <>
+                        <div className="ag-theme-alpine" style={{ height: 500, width: "100%", marginTop: "15px" }}>
+                            <AgGridReact
+                                rowData={shipmentTableRows}
+                                columnDefs={shipmentTableColumns}
+                                pagination={true}
+                                paginationPageSize={10}
+                                frameworkComponents={{}}
+                                suppressAggFuncInHeader={true}
+                                domLayout="autoHeight"
+                                groupIncludeTotalFooter={true}
+                                pinnedBottomRowData={pinnedRowData}
+                            />
+                        </div>
+                    </>
                     :
                     <></>
             }
