@@ -303,8 +303,7 @@ const LoadVehicleCreateForm = () => {
     }
 
     // date fometing functions
-    const date = new Date();
-    const formattedDate = date.toISOString().slice(0, 19).replace("T", " ");
+    const date = new Date().toISOString().slice(0, 10);
 
     // form data state and handle
     const [formData, setFormData] = React.useState({
@@ -326,7 +325,7 @@ const LoadVehicleCreateForm = () => {
         container_type: "",
         container_no: "",
         type: "load",
-        movement_at: formattedDate,
+        movement_at: date,
         gross_weight: "",
         tare_weight: "",
         net_weight: ""
@@ -405,7 +404,7 @@ const LoadVehicleCreateForm = () => {
         setFormData({
             ...formData,
             type: "load",
-            movement_at: formattedDate
+            movement_at: date
         })
         if (formData.party_id != '' && formData.supplier_id != '' && formData.cargo_id != '' && formData.movement_type != '') {
             handleShow();

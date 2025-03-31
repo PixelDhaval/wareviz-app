@@ -3,9 +3,12 @@ import { Form, Placeholder } from "react-bootstrap";
 import { getAllVehicleMovements } from "@/api/VehicleMovements";
 import { AgGridReact } from "ag-grid-react";
 import { AllCommunityModule, ModuleRegistry, themeAlpine, themeBalham, themeMaterial, themeQuartz } from 'ag-grid-community';
+import { useNavigate } from "react-router-dom";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 const MovementReportTable = () => {
+    const navigate = useNavigate();
+
     const [paginate, setPaginate] = useState(false);
     const [filters, setFilters] = useState({
         movement_at: "",
@@ -46,7 +49,9 @@ const MovementReportTable = () => {
             const totalWeight = tableData.reduce((sum, item) => sum + (item.cargo_detail?.total_weight ?? 0), 0);
 
             const update = tableData.map(item => ({
-                movement_type: item.type == 'load' ? "Load" : "Unload",
+                id: item.id,
+                type: item.type,
+                movement_type: item.type == 'load' ? "load" : "unload",
                 vehicle_no: item.vehicle_no ?? "Pending",
                 party_name: item.party?.trade_name,
                 godown_name: item.godown?.godown_name,
@@ -84,16 +89,17 @@ const MovementReportTable = () => {
         {
             field: "movement_type", headerName: "Type", filter: "agTextColumnFilter", floatingFilter: true, sortable: true,
             cellStyle: params => {
-                if (params.value === 'Load') {
+                if (params.value === 'load') {
                     return { color: 'black', backgroundColor: 'lightblue' };
                 }
-                if (params.value === 'Unload') {
+                if (params.value === 'unload') {
                     return { color: 'white', backgroundColor: 'burlywood' };
                 }
                 return null;
             }
         },
-        { field: "vehicle_no", headerName: "Vehicle No", filter: "agTextColumnFilter", floatingFilter: true, sortable: true,
+        {
+            field: "vehicle_no", headerName: "Vehicle No", filter: "agTextColumnFilter", floatingFilter: true, sortable: true,
             cellStyle: params => {
                 if (params.value === 'Pending') {
                     return { color: 'white', backgroundColor: 'burlywood' };
@@ -101,7 +107,17 @@ const MovementReportTable = () => {
                 return null;
             }
         },
-        { field: "party_name", headerName: "Party Name", filter: "agTextColumnFilter", floatingFilter: true, sortable: true },
+        {
+            field: "party_name", headerName: "Party Name", filter: "agTextColumnFilter", floatingFilter: true, sortable: true,
+            cellRenderer: (params) => (
+                <span
+                    style={{ cursor: "pointer" }}
+                    onClick={() => navigate(`/${params.data.type}/view?id=${params.data.id}`)}
+                >
+                    {params.value}
+                </span>
+            )
+        },
         { field: "godown_name", headerName: "Godown Name", filter: "agTextColumnFilter", floatingFilter: true, sortable: true },
         { field: "supplier_name", headerName: "Supplier Name", filter: "agTextColumnFilter", floatingFilter: true, sortable: true },
         { field: "cargo_name", headerName: "Cargo Name", filter: "agTextColumnFilter", floatingFilter: true, sortable: true },

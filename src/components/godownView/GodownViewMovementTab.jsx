@@ -5,9 +5,12 @@ import { MdDownloading } from "react-icons/md";
 import Select from "react-select";
 import { AgGridReact } from "ag-grid-react";
 import { AllCommunityModule, ModuleRegistry, themeAlpine, themeBalham, themeMaterial, themeQuartz } from 'ag-grid-community';
+import { useNavigate } from "react-router-dom";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 const GodownViewMovementTab = () => {
+    const navigate = useNavigate();
+
     const urlParams = new URLSearchParams(window.location.search);
     const id = urlParams.get("id");
 
@@ -60,6 +63,7 @@ const GodownViewMovementTab = () => {
         if (viewDetails && viewDetails.length > 0) {
             const update = viewDetails.map((item) => ({
                 id: item.id,
+                type: item.type,
                 vehicle_no: item.vehicle_no ?? "",
                 supplier: item.supplier?.legal_name ?? "-",
                 cargo: item.cargo?.cargo_name ?? "-",
@@ -87,8 +91,28 @@ const GodownViewMovementTab = () => {
     // const data table columns for vehicle movemennt
     const vehicleTableColumns = [
         { field: "vehicle_no", headerName: "Vehicle No", sortable: true, filter: "agTextColumnFilter", floatingFilter: true },
-        { field: "supplier", headerName: "Supplier", sortable: true, filter: "agTextColumnFilter", floatingFilter: true },
-        { field: "cargo", headerName: "Cargo", sortable: true, filter: "agTextColumnFilter", floatingFilter: true },
+        {
+            field: "supplier", headerName: "Supplier", sortable: true, filter: "agTextColumnFilter", floatingFilter: true,
+            cellRenderer: (params) => (
+                <span
+                    style={{ cursor: "pointer" }}
+                    onClick={() => navigate(`/${params.data.type}/view?id=${params.data.id}`)}
+                >
+                    {params.value}
+                </span>
+            )
+        },
+        {
+            field: "cargo", headerName: "Cargo", sortable: true, filter: "agTextColumnFilter", floatingFilter: true,
+            cellRenderer: (params) => (
+                <span
+                    style={{ cursor: "pointer" }}
+                    onClick={() => navigate(`/${params.data.type}/view?id=${params.data.id}`)}
+                >
+                    {params.value}
+                </span>
+            )
+        },
         { field: "godown", headerName: "Godown", sortable: true, filter: "agTextColumnFilter", floatingFilter: true },
         { field: "net_weight", headerName: "Net Weight", sortable: true, filter: "agNumberColumnFilter" },
         { field: "pp_bag", headerName: "PP Bags", sortable: true, filter: "agNumberColumnFilter" },
@@ -123,6 +147,7 @@ const GodownViewMovementTab = () => {
             setRailTableRows(
                 viewDetails.map((item) => ({
                     id: item.id,
+                    type: item.type,
                     rr_no: item.rr_no ? item.rr_no : "Pending",
                     rr_date: item.rr_date ? item.rr_date : "",
                     supplier: item.supplier?.legal_name ?? "-",
@@ -153,8 +178,28 @@ const GodownViewMovementTab = () => {
     const railTableColumns = [
         { field: "rr_no", headerName: "RR No", sortable: true, filter: "agTextColumnFilter", floatingFilter: true },
         { field: "rr_date", headerName: "RR Date", sortable: true, filter: "agDateColumnFilter", floatingFilter: true },
-        { field: "supplier", headerName: "Supplier", sortable: true, filter: "agTextColumnFilter", floatingFilter: true },
-        { field: "cargo", headerName: "Cargo", sortable: true, filter: "agTextColumnFilter", floatingFilter: true },
+        {
+            field: "supplier", headerName: "Supplier", sortable: true, filter: "agTextColumnFilter", floatingFilter: true,
+            cellRenderer: (params) => (
+                <span
+                    style={{ cursor: "pointer" }}
+                    onClick={() => navigate(`/${params.data.type}/view?id=${params.data.id}`)}
+                >
+                    {params.value}
+                </span>
+            )
+        },
+        {
+            field: "cargo", headerName: "Cargo", sortable: true, filter: "agTextColumnFilter", floatingFilter: true,
+            cellRenderer: (params) => (
+                <span
+                    style={{ cursor: "pointer" }}
+                    onClick={() => navigate(`/${params.data.type}/view?id=${params.data.id}`)}
+                >
+                    {params.value}
+                </span>
+            )
+        },
         { field: "godown", headerName: "Godown", sortable: true, filter: "agTextColumnFilter", floatingFilter: true },
         { field: "net_weight", headerName: "Net Weight (KG)", sortable: true, filter: "agNumberColumnFilter", cellRenderer: (params) => `${params.value} KG` },
         { field: "pp_bag", headerName: "PP Bags", sortable: true, filter: "agNumberColumnFilter" },

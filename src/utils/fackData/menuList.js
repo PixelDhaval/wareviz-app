@@ -1,9 +1,16 @@
 export const menuList = [
     {
+        id: 6,
+        name: "Dashboard",
+        path: "/",
+        icon: "feather-airplay",
+        dropdownMenu: []
+    },
+    {
         id: 0,
         name:"Master",
         path: "#",
-        icon: 'feather-airplay',
+        icon: 'master',
         dropdownMenu: [
             {
                 id: 1,

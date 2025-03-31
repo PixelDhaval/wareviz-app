@@ -5,8 +5,11 @@ import { AgGridReact } from "ag-grid-react";
 import { AllCommunityModule, ModuleRegistry, themeAlpine, themeBalham, themeMaterial, themeQuartz } from 'ag-grid-community';
 ModuleRegistry.registerModules([AllCommunityModule]);
 import Chart from "react-apexcharts";
+import { useNavigate } from "react-router-dom";
 
 const GodownViewStockTab = () => {
+    const navigate = useNavigate();
+
     const urlParams = new URLSearchParams(window.location.search);
     const id = urlParams.get("id");
 
@@ -102,10 +105,10 @@ const GodownViewStockTab = () => {
         {
             field: "type", headerName: "Type", filter: "agTextColumnFilter", floatingFilter: true,
             cellStyle: params => {
-                if (params.value === 'Load') {
+                if (params.value === 'load') {
                     return { color: 'black', backgroundColor: 'lightblue' };
                 }
-                if (params.value === 'Unload') {
+                if (params.value === 'unload') {
                     return { color: 'white', backgroundColor: 'burlywood' };
                 }
                 return null;
@@ -113,8 +116,28 @@ const GodownViewStockTab = () => {
         },
         { field: "movement_type", headerName: "Movement Type", filter: "agTextColumnFilter", floatingFilter: true },
         { field: "movement_at", headerName: "Movement At" },
-        { field: "supplier", headerName: "Supplier", filter: "agTextColumnFilter", floatingFilter: true },
-        { field: "cargo", headerName: "Cargo", filter: "agTextColumnFilter", floatingFilter: true },
+        {
+            field: "supplier", headerName: "Supplier", filter: "agTextColumnFilter", floatingFilter: true,
+            cellRenderer: (params) => (
+                <span
+                    style={{ cursor: "pointer" }}
+                    onClick={() => navigate(`/${params.data.type}/view?id=${params.data.id}`)}
+                >
+                    {params.value}
+                </span>
+            )
+        },
+        {
+            field: "cargo", headerName: "Cargo", filter: "agTextColumnFilter", floatingFilter: true,
+            cellRenderer: (params) => (
+                <span
+                    style={{ cursor: "pointer" }}
+                    onClick={() => navigate(`/${params.data.type}/view?id=${params.data.id}`)}
+                >
+                    {params.value}
+                </span>
+            )
+        },
         { field: "godown", headerName: "Godown", filter: "agTextColumnFilter", floatingFilter: true },
         { field: "net_weight", headerName: "Net Weight", },
         { field: "pp_bags", headerName: "PP Bags", },
@@ -128,7 +151,8 @@ const GodownViewStockTab = () => {
     useEffect(() => {
         if (godownStock && godownStock.length > 0) {
             const update = godownStock.map(item => ({
-                type: item.type === "load" ? "Load" : "Unload",
+                id: item.id,
+                type: item.type === "load" ? "load" : "unload",
                 movement_type: item.movement_type ?? "-",
                 movement_at: item.movement_at ?? "-",
                 supplier: item.supplier?.trade_name ?? "Panding",

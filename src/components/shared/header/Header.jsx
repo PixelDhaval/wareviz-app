@@ -159,27 +159,15 @@ const Header = () => {
                     </div>
                     {/* <!--! [End] nxl-navigation-toggle !-->
                     <!--! [Start] nxl-lavel-mega-menu-toggle !--> */}
-                    <div className="nxl-lavel-mega-menu-toggle d-flex d-lg-none">
-                        <a href="#" onClick={(e) => {e.preventDefault(), setOpenMegaMenu(true)}} id="nxl-lavel-mega-menu-open">
-                            <FiAlignLeft size={24} />
-                        </a>
-                    </div>
+                   
                     {/* <!--! [End] nxl-lavel-mega-menu-toggle !-->
                     <!--! [Start] nxl-lavel-mega-menu !--> */}
-                    <div className="nxl-drp-link nxl-lavel-mega-menu">
-                        <div className="nxl-lavel-mega-menu-toggle d-flex d-lg-none">
-                            <a href="#" onClick={(e) => {e.preventDefault(), setOpenMegaMenu(false)}} id="nxl-lavel-mega-menu-hide">
-                                <i className="me-2"><FiArrowLeft /></i>
-                                <span>Back</span>
-                            </a>
-                        </div>
-                    </div>
+                   
                 </div>
                 {/* <!--! [End] Header Left !-->
                 <!--! [Start] Header Right !--> */}
                 <div className="header-right ms-auto">
                     <div className="d-flex align-items-center">
-                        <SearchModal />
                         <div className="nxl-h-item d-none d-sm-flex" >
                             <div className="full-screen-switcher">
                                 <span className="nxl-head-link me-0">

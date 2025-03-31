@@ -5,9 +5,12 @@ import DataTable from "react-data-table-component";
 import Select from "react-select";
 import { AgGridReact } from "ag-grid-react";
 import { AllCommunityModule, ModuleRegistry, themeAlpine, themeBalham, themeMaterial, themeQuartz } from 'ag-grid-community';
+import { useNavigate } from "react-router-dom";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 const ShiftingReportTable = () => {
+    const navigate = useNavigate();
+
     const [paginate, setPaginate] = React.useState(false);
     const [filters, SetFilters] = React.useState({
         movement_at: "",
@@ -44,9 +47,39 @@ const ShiftingReportTable = () => {
 
     // Table columns for godown view
     const godownTableColumns = [
-        { field: "party", headerName: "Party Name", sorting: true, filter: "agTextColumnFilter", floatingFilter: true },
-        { field: "supplier", headerName: "Supplier Name", sorting: true, filter: "agTextColumnFilter", floatingFilter: true },
-        { field: "cargo", headerName: "Cargo Name", sorting: true, filter: "agTextColumnFilter", floatingFilter: true },
+        {
+            field: "party", headerName: "Party Name", sorting: true, filter: "agTextColumnFilter", floatingFilter: true,
+            cellRenderer: (params) => (
+                <span
+                    style={{ cursor: "pointer" }}
+                    onClick={() => navigate(`/${params.data.type}/view?id=${params.data.id}`)}
+                >
+                    {params.value}
+                </span>
+            )
+        },
+        {
+            field: "supplier", headerName: "Supplier Name", sorting: true, filter: "agTextColumnFilter", floatingFilter: true,
+            cellRenderer: (params) => (
+                <span
+                    style={{ cursor: "pointer" }}
+                    onClick={() => navigate(`/${params.data.type}/view?id=${params.data.id}`)}
+                >
+                    {params.value}
+                </span>
+            )
+        },
+        {
+            field: "cargo", headerName: "Cargo Name", sorting: true, filter: "agTextColumnFilter", floatingFilter: true,
+            cellRenderer: (params) => (
+                <span
+                    style={{ cursor: "pointer" }}
+                    onClick={() => navigate(`/${params.data.type}/view?id=${params.data.id}`)}
+                >
+                    {params.value}
+                </span>
+            )
+        },
         { field: "formGodown", headerName: "From Godown", sorting: true, filter: "agTextColumnFilter", floatingFilter: true },
         { field: "toGodown", headerName: "To Godown", sorting: true, filter: "agTextColumnFilter", floatingFilter: true },
         { field: "net_weight", headerName: "Net Weight", },
@@ -65,6 +98,8 @@ const ShiftingReportTable = () => {
             const totalJuteBags = tableData.reduce((sum, item) => sum + (item.cargo_detail?.bags_type === "jute" ? item.cargo_detail?.bags_qty : 0), 0);
             const totalWeight = tableData.reduce((sum, item) => sum + (item.cargo_detail?.total_weight ?? 0), 0);
             const update = tableData.map(item => ({
+                id: item.id,
+                type: item.type,
                 party: item.party?.trade_name,
                 supplier: item.supplier?.trade_name,
                 cargo: item.cargo?.cargo_name,
@@ -96,10 +131,50 @@ const ShiftingReportTable = () => {
 
     // Table columns for party view
     const partyTableColumns = [
-        { field: "formParty", headerName: "Form Party", sorting: true, filter: "agTextColumnFilter", floatingFilter: true },
-        { field: "toParty", headerName: "To Party", sorting: true, filter: "agTextColumnFilter", floatingFilter: true },
-        { field: "supplier", headerName: "Supplier Name", sorting: true, filter: "agTextColumnFilter", floatingFilter: true },
-        { field: "cargo", headerName: "Cargo Name", sorting: true, filter: "agTextColumnFilter", floatingFilter: true },
+        {
+            field: "formParty", headerName: "Form Party", sorting: true, filter: "agTextColumnFilter", floatingFilter: true,
+            cellRenderer: (params) => (
+                <span
+                    style={{ cursor: "pointer" }}
+                    onClick={() => navigate(`/${params.data.type}/view?id=${params.data.id}`)}
+                >
+                    {params.value}
+                </span>
+            )
+        },
+        {
+            field: "toParty", headerName: "To Party", sorting: true, filter: "agTextColumnFilter", floatingFilter: true,
+            cellRenderer: (params) => (
+                <span
+                    style={{ cursor: "pointer" }}
+                    onClick={() => navigate(`/${params.data.type}/view?id=${params.data.id}`)}
+                >
+                    {params.value}
+                </span>
+            )
+        },
+        {
+            field: "supplier", headerName: "Supplier Name", sorting: true, filter: "agTextColumnFilter", floatingFilter: true,
+            cellRenderer: (params) => (
+                <span
+                    style={{ cursor: "pointer" }}
+                    onClick={() => navigate(`/${params.data.type}/view?id=${params.data.id}`)}
+                >
+                    {params.value}
+                </span>
+            )
+        },
+        {
+            field: "cargo", headerName: "Cargo Name", sorting: true, filter: "agTextColumnFilter", floatingFilter: true,
+            cellRenderer: (params) => (
+                <span
+                    style={{ cursor: "pointer" }}
+                    onClick={() => navigate(`/${params.data.type}/view?id=${params.data.id}`)}
+                >
+                    {params.value}
+                </span>
+            )
+        },
         { field: "godown", headerName: "Godown Name", sorting: true, filter: "agTextColumnFilter", floatingFilter: true },
         { field: "net_weight", headerName: "Net Weight", },
         { field: "pp_bags", headerName: "PP Bags", },
@@ -117,6 +192,8 @@ const ShiftingReportTable = () => {
             const totalJuteBags = tableData.reduce((sum, item) => sum + (item.cargo_detail?.bags_type === "jute" ? item.cargo_detail?.bags_qty : 0), 0);
             const totalWeight = tableData.reduce((sum, item) => sum + (item.cargo_detail?.total_weight ?? 0), 0);
             const update = tableData.map(item => ({
+                id: item.id,
+                type: item.type,
                 formParty: item.party?.trade_name,
                 toParty: item.ref_movement?.party?.trade_name,
                 supplier: item.supplier?.trade_name,

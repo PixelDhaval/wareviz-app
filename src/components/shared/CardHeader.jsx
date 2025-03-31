@@ -44,57 +44,7 @@ const CardHeader = ({ title, refresh, remove, expanded }) => {
               {" "}
             </span>
           </div>
-        </div>
-        <div className="filter-dropdown">
-          <div
-            className="avatar-text avatar-sm"
-            data-bs-toggle="dropdown"
-            data-bs-offset="25, 25"
-          >
-            <div data-bs-toggle="tooltip" title="Options" className="lh-1">
-              <FiMoreVertical />
-            </div>
-          </div>
-          <div className="dropdown-menu dropdown-menu-end">
-            <Link to="#" className="dropdown-item">
-              <i>
-                <FiAtSign />
-              </i>
-              New
-            </Link>
-            <Link to="#" className="dropdown-item">
-              <i>
-                <FiCalendar />
-              </i>
-              Event
-            </Link>
-            <Link to="#" className="dropdown-item">
-              <i>
-                <FiBell />
-              </i>
-              Snoozed
-            </Link>
-            <Link to="#" className="dropdown-item">
-              <i>
-                <FiTrash />
-              </i>
-              Deleted
-            </Link>
-            <div className="dropdown-divider"></div>
-            <Link to="#" className="dropdown-item">
-              <i>
-                <FiSettings />
-              </i>
-              Settings
-            </Link>
-            <Link to="#" className="dropdown-item">
-              <i>
-                <FiLifeBuoy />
-              </i>
-              Tips & Tricks
-            </Link>
-          </div>
-        </div>
+        </div> ,.
       </div>
     </div>
   );

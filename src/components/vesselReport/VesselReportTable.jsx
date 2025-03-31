@@ -4,8 +4,11 @@ import { getAllVehicleMovements } from "@/api/VehicleMovements";
 import Select from "react-select";
 import { FiEdit3, FiTrash2, FiX } from "react-icons/fi";
 import { AgGridReact } from "ag-grid-react";
+import { useNavigate } from "react-router-dom";
 
 const VesselReportTable = () => {
+    const navigate = useNavigate();
+
     const [paginate, setPaginate] = React.useState(false);
     const [filters, SetFilters] = React.useState({
         movement_at: "",
@@ -30,10 +33,30 @@ const VesselReportTable = () => {
 
     // Table columns
     const columns = [
-        { field: "vessel_name", headerName: "Vessel Name", sortable: true, filter: "agTextColumnFilter", floatingFilter: true },
+        {
+            field: "vessel_name", headerName: "Vessel Name", sortable: true, filter: "agTextColumnFilter", floatingFilter: true,
+            cellRenderer: (params) => (
+                <span
+                    style={{ cursor: "pointer" }}
+                    onClick={() => navigate(`/${params.data.type}/view?id=${params.data.id}`)}
+                >
+                    {params.value}
+                </span>
+            )
+        },
         { field: "vessel_date", headerName: "Vessel Date", sortable: true, filter: "agDateColumnFilter", floatingFilter: true },
         { field: "shipment", headerName: "Shiment", sortable: true, filter: "agTextColumnFilter", floatingFilter: true },
-        { field: "party", headerName: "Party Name", sortable: true, filter: "agTextColumnFilter", floatingFilter: true },
+        {
+            field: "party", headerName: "Party Name", sortable: true, filter: "agTextColumnFilter", floatingFilter: true,
+            cellRenderer: (params) => (
+                <span
+                    style={{ cursor: "pointer" }}
+                    onClick={() => navigate(`/${params.data.type}/view?id=${params.data.id}`)}
+                >
+                    {params.value}
+                </span>
+            )
+        },
         { field: "godown", headerName: "Godown Name", sortable: true, filter: "agTextColumnFilter", floatingFilter: true },
         { field: "supplier", headerName: "Supplier Name", sortable: true, filter: "agTextColumnFilter", floatingFilter: true },
         { field: "cargo", headerName: "Cargo Name", sortable: true, filter: "agTextColumnFilter", floatingFilter: true },
@@ -54,6 +77,8 @@ const VesselReportTable = () => {
             const totalNetWeight = tableData.reduce((sum, item) => sum + (item.net_weight ?? 0), 0);
             const totalContainer = tableData.reduce((sum, item) => sum + (item.container_no ?? 0), 0);
             const update = tableData.map(item => ({
+                id: item.id,
+                type: item.type,
                 vessel_name: item.vessel_name,
                 vessel_date: item.vessel_date,
                 shipment: item.shipment_type + ' - ' + item.container_no + ' x ' + item.container_type + "'",

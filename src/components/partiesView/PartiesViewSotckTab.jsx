@@ -5,9 +5,12 @@ import { Placeholder } from "react-bootstrap";
 import Select from "react-select";
 import { AgGridReact } from "ag-grid-react";
 import { AllCommunityModule, ModuleRegistry, themeAlpine, themeBalham, themeMaterial, themeQuartz } from 'ag-grid-community';
+import { useNavigate } from "react-router-dom";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 const PartiesViewStockTab = () => {
+    const navigate = useNavigate();
+
     const urlParams = new URLSearchParams(window.location.search);
     const id = urlParams.get("id");
 
@@ -91,7 +94,7 @@ const PartiesViewStockTab = () => {
             setRowDataAgGrid(
                 data.map((item) => ({
                     id: item.id,
-                    type: item.type === "load" ? "Load" : "Unload",
+                    type: item.type === "load" ? "load" : "unload",
                     movement_type: item.movement_type ?? "-",
                     movement_at: item.movement_at ?? "-",
                     supplier: item.supplier?.legal_name ?? "-",
@@ -126,10 +129,10 @@ const PartiesViewStockTab = () => {
             filter: "agTextColumnFilter",
             floatingFilter: true,
             cellStyle: params => {
-                if (params.value === 'Load') {
+                if (params.value === 'load') {
                     return { color: 'black', backgroundColor: 'lightblue' };
                 }
-                if (params.value === 'Unload') {
+                if (params.value === 'unload') {
                     return { color: 'white', backgroundColor: 'burlywood' };
                 }
                 return null;
@@ -150,12 +153,28 @@ const PartiesViewStockTab = () => {
             headerName: "Supplier",
             filter: "agTextColumnFilter",
             floatingFilter: true,
+            cellRenderer: (params) => (
+                <span
+                    style={{ cursor: "pointer" }}
+                    onClick={() => navigate(`/${params.data.type}/view?id=${params.data.id}`)}
+                >
+                    {params.value}
+                </span>
+            )
         },
         {
             field: "cargo",
             headerName: "Cargo",
             filter: "agTextColumnFilter",
             floatingFilter: true,
+            cellRenderer: (params) => (
+                <span
+                    style={{ cursor: "pointer" }}
+                    onClick={() => navigate(`/${params.data.type}/view?id=${params.data.id}`)}
+                >
+                    {params.value}
+                </span>
+            )
         },
         {
             field: "godown",

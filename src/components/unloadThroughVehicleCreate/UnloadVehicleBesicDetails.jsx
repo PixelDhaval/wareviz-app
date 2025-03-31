@@ -35,8 +35,7 @@ const UnloadVehicleBesicDetails = () => {
     });
     const [isLoading, setIsLoading] = React.useState(false);
     // create a vehicle movement
-    const date = new Date();
-    const formattedDate = date.toISOString().slice(0, 19).replace("T", " ");
+    const date = new Date().toISOString().split("T")[0];
     const [createVehicle, setCreateVehicle] = React.useState({
         party_id: "",
         supplier_id: "",
@@ -49,7 +48,7 @@ const UnloadVehicleBesicDetails = () => {
         rr_number: "",
         rr_date: "",
         type: "unload",
-        movement_at: formattedDate
+        movement_at: date
     });
     const [errorHandler, setErrorHandler] = React.useState({
         party_id: "",
@@ -386,7 +385,7 @@ const UnloadVehicleBesicDetails = () => {
         setCreateVehicle({
             ...createVehicle, [e.target.name]: e.target.value,
             type: "unload",
-            movement_at: formattedDate
+            movement_at: date
         });
     }
     // form submit handler

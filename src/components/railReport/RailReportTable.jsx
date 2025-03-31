@@ -3,9 +3,12 @@ import { Form, Placeholder } from "react-bootstrap";
 import { getAllVehicleMovements } from "@/api/VehicleMovements";
 import { AgGridReact } from "ag-grid-react";
 import { AllCommunityModule, ModuleRegistry, themeAlpine, themeBalham, themeMaterial, themeQuartz } from 'ag-grid-community';
+import { useNavigate } from "react-router-dom";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 const RailReportTable = () => {
+    const navigate = useNavigate();
+
     const [filters, SetFilters] = React.useState({
         movement_at: "",
         movement_type: "rail",
@@ -28,20 +31,31 @@ const RailReportTable = () => {
 
     // Table columns
     const columns = [
-        { field: "type", headerName: "Type", sortable: true, filter: "agTextColumnFilter", floatingFilter: true,
+        {
+            field: "type", headerName: "Type", sortable: true, filter: "agTextColumnFilter", floatingFilter: true,
             cellStyle: params => {
-                if (params.value === 'Load') {
+                if (params.value === 'load') {
                     return { color: 'black', backgroundColor: 'lightblue' };
                 }
-                if (params.value === 'Unload') {
+                if (params.value === 'unload') {
                     return { color: 'white', backgroundColor: 'burlywood' };
                 }
                 return null;
             }
-         },
+        },
         { field: "rr_number", headerName: "RR No", sortable: true, filter: "agTextColumnFilter", floatingFilter: true },
         { field: "rr_date", headerName: "RR Date", sortable: true, filter: "agDateColumnFilter", floatingFilter: true },
-        { field: "party_name", headerName: "Party Name", sortable: true, filter: "agTextColumnFilter", floatingFilter: true },
+        {
+            field: "party_name", headerName: "Party Name", sortable: true, filter: "agTextColumnFilter", floatingFilter: true,
+            cellRenderer: (params) => (
+                <span
+                    style={{ cursor: "pointer" }}
+                    onClick={() => navigate(`/${params.data.type}/view?id=${params.data.id}`)}
+                >
+                    {params.value}
+                </span>
+            )
+        },
         { field: "godown_name", headerName: "Godown Name", sortable: true, filter: "agTextColumnFilter", floatingFilter: true },
         { field: "supplier_name", headerName: "Supplier Name", sortable: true, filter: "agTextColumnFilter", floatingFilter: true },
         { field: "cargo_name", headerName: "Cargo Name", sortable: true, filter: "agTextColumnFilter", floatingFilter: true },
@@ -67,7 +81,8 @@ const RailReportTable = () => {
 
             // Map data into rowData format
             const update = tableData.map(item => ({
-                type: item.type === "load" ? "Load" : "Unload",
+                id: item.id,
+                type: item.type === "load" ? "load" : "unload",
                 rr_number: item.rr_number,
                 rr_date: item.rr_date,
                 party_name: item.party?.trade_name ?? "-",
@@ -104,7 +119,7 @@ const RailReportTable = () => {
             setRowData([]);
             setPinnedRowData([]);
         }
-    }, [tableData]); 
+    }, [tableData]);
 
     // Export to CSV
     const gridRef = useRef(null);
@@ -134,8 +149,8 @@ const RailReportTable = () => {
                     <>
                         {filters.movement_at !== '' && (
                             <>
-                                <button className="btn btn-primary btn-md my-3" onClick={exportCSV}>    
-                                    Download CSV    
+                                <button className="btn btn-primary btn-md my-3" onClick={exportCSV}>
+                                    Download CSV
                                 </button>
                                 <div className="ag-theme-alpine" style={{ height: 500, width: "100%", marginTop: "15px" }}>
                                     <AgGridReact

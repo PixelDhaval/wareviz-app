@@ -7,7 +7,7 @@ const SalesMiscellaneous = ({isFooterShow, dataList}) => {
     const chartOption = estimateAreaChartOptions()
     const data = [20, 10, 18, 12, 25, 10, 20]
     return (
-        <div className="col-xxl-4">
+        <div className="col-xxl-12">
             <div className="card stretch stretch-full overflow-hidden">
                 <div className="bg-primary text-white">
                     <div className="p-4">
